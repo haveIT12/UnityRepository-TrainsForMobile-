@@ -16,12 +16,6 @@ public class MainSceneScript : MonoBehaviour
     public bool isTownOpened;
     public bool isTownRawInfoOpened;
     private IEnumerator camToTargetCoroutine;
-    public void Start()
-    {
-    }
-    void Update()
-    {
-    }
     public void RaycastGo()
     {
         Ray ray = cam.ScreenPointToRay(new Vector2(Input.mousePosition.x, Input.mousePosition.y));
@@ -42,22 +36,17 @@ public class MainSceneScript : MonoBehaviour
                         if (isTownRawInfoOpened == false)
                         {
                             if (_hit.collider.tag == "City")
-                            {
-                                townScript = _hit.collider.gameObject.GetComponent<TownScript>();
-                                uiScript.OpenTownRawInfo();
-                                isTownRawInfoOpened = true;
-                                camToTargetCoroutine = CamToTarget(townScript.gameObject);
-                                StartCoroutine(camToTargetCoroutine);
-                            }
+                                OpenTownRawInfo(_hit);
                         }
                         else
                         {
-                            if (_hit.collider.tag != "City")
+                            if (_hit.collider.tag == "City")
                             {
-                                uiScript.CloseTownRawInfo();
-                                isTownRawInfoOpened = false;
-                                StopCoroutine(camToTargetCoroutine);
+                                CloseTownRawInfo();
+                                OpenTownRawInfo(_hit);
                             }
+                            else
+                                CloseTownRawInfo();
                         }
                     }
                 }
@@ -68,23 +57,47 @@ public class MainSceneScript : MonoBehaviour
             }
         }
     }
+    private void OpenTownRawInfo(RaycastHit _hit)
+    {
+        isTownRawInfoOpened = true;
+
+        townScript = _hit.collider.gameObject.GetComponent<TownScript>();
+        uiScript.OpenTownRawInfo();
+        townScript.gameObject.tag = "CurrentCity";
+
+        camToTargetCoroutine = CamToTarget(townScript.gameObject);
+        StartCoroutine(camToTargetCoroutine);
+    }
+    private void CloseTownRawInfo()
+    {
+        isTownRawInfoOpened = false;
+
+        townScript.gameObject.tag = "City";
+        uiScript.CloseTownRawInfo();
+
+        StopCoroutine(camToTargetCoroutine);
+    }
     IEnumerator CamToTarget(GameObject target)
     {
         float elapsedTime = 0;
-        float waitTime = 2f;
+        float waitTime = 1f;
+
         Vector3 gotopos = new Vector3(target.transform.position.x - lookX, camController.newPosition.y, target.gameObject.transform.position.z - lookZ);
-        Debug.Log(target.transform.position);
+
         while (elapsedTime < waitTime)
         {
+            if (elapsedTime >= 0.2f)
+            {
+                if (camController.touchZero.phase == TouchPhase.Moved)
+                    StopCoroutine(camToTargetCoroutine);
+            }
+
             camController.newPosition = Vector3.Lerp(camController.newPosition, gotopos, (elapsedTime / waitTime));
             elapsedTime += Time.deltaTime;
             yield return null;
+
         }
-        /*for (float t = 0.01f; t < waitTime; t += 0.01f)
-        {
-            yield return null;
-        }*/
-        //camController.newPosition = gotopos;
+        camController.newPosition = gotopos;
         yield return null;
     }
 }

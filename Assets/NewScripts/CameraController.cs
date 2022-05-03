@@ -25,9 +25,9 @@ public class CameraController : MonoBehaviour
     public float newZoom;
     public float zoomSensivity;
 
-    private bool multiTouch;
+    public bool multiTouch;
 
-    private Touch touchZero;
+    public Touch touchZero;
     private Touch touchOne;
 
     private Vector3 avgPosition;
@@ -112,8 +112,9 @@ public class CameraController : MonoBehaviour
         transform.position = new Vector3(
         Mathf.Clamp(transform.position.x, leftLimit, rightLimit),
         transform.position.y,
-        Mathf.Clamp(transform.position.z, backLimit, forwardLimit)); ;
+        Mathf.Clamp(transform.position.z, backLimit, forwardLimit));
         cam.orthographicSize = Mathf.Lerp(cam.orthographicSize, newZoom, Time.deltaTime * zoomTime);
+        cam.orthographicSize = Mathf.Clamp( cam.orthographicSize, zoomMin, zoomMax);
     }
     private void zoom(float increment)
     {
