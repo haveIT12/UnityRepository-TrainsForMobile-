@@ -7081,6 +7081,12 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1840336636}
   m_CullTransparentMesh: 1
+--- !u!1 &1841334371 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 78651dac494bf8e478167dc2358c28d7,
+    type: 3}
+  m_PrefabInstance: {fileID: 505083633}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1844180645
 GameObject:
   m_ObjectHideFlags: 0
@@ -7942,7 +7948,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uiScript: {fileID: 825221810}
   townScript: {fileID: 0}
-  town: {fileID: 643059637}
+  town: {fileID: 1841334371}
   cam: {fileID: 495043676}
   camController: {fileID: 1385496602}
   lookX: 10.7
