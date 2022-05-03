@@ -7,6 +7,8 @@ using TMPro;
 public class TownScript : MonoBehaviour
 {
     public TownInfo townInfo;
+    public MainSceneScript mainScript;
+    public int TownNumber;
     public string townName => townInfo.townName;
     private string businessName => townInfo.businessName;
     private string rawName => townInfo.rawName;
@@ -26,8 +28,9 @@ public class TownScript : MonoBehaviour
     public int productCount;
     public int rawCount;
 
+    public GameObject TownRawCanvas;
 
-    public TextMeshProUGUI townNameText;
+    /*public TextMeshProUGUI townNameText;
     public TextMeshProUGUI businessNameText;
     public TextMeshProUGUI rawToProductText;
     public TextMeshProUGUI productFromRawText;
@@ -43,7 +46,7 @@ public class TownScript : MonoBehaviour
     public Image publicBussinessSprite2;
     public Image publicRawSprite2;
     public Image productFullBar;
-    public Image rawFullBar;
+    public Image rawFullBar;*/
 
     void Start()
     {
@@ -53,7 +56,7 @@ public class TownScript : MonoBehaviour
 
     void Update()
     {
-        townNameText.text = townName;
+        /*townNameText.text = townName;
         businessNameText.text = businessName;
         rawToProductText.text = rawToProduct.ToString();
         productFromRawText.text = productFromRaw.ToString();
@@ -69,6 +72,13 @@ public class TownScript : MonoBehaviour
         publicRawSprite1.sprite = rawSprite;
         publicRawSprite2.sprite = rawSprite;
         productFullBar.fillAmount = productCount / maxStorageProduct;
-        rawFullBar.fillAmount = rawCount / maxStorageRaw;
+        rawFullBar.fillAmount = rawCount / maxStorageRaw;*/
+    }
+    public void OpenTown()
+    { 
+    }
+    public void CloseTown()
+    { 
+    
     }
 }

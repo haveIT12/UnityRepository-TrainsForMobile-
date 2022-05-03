@@ -4,14 +4,10 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    [Header("Camera")]
+    [Header("Camera and MainScript")]
     public Transform cameraTransform;
     public Camera cam;
-
-    [Space]
-
-    [Header("Main Script")]
-    public MainScript mScript;
+    public MainSceneScript mainScript;
 
     [Space]
 
@@ -35,7 +31,7 @@ public class CameraController : MonoBehaviour
     private Touch touchOne;
 
     private Vector3 avgPosition;
-    private Vector3 newPosition;
+    public Vector3 newPosition;
     private Vector3 dragStartPosition;
     private Vector3 dragCurrentPosition;
 
@@ -54,7 +50,7 @@ public class CameraController : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             multiTouch = false;
-            //mScript.RaycastGo();
+            mainScript.RaycastGo();
         }
         if (Input.touchCount > 0)
         {
