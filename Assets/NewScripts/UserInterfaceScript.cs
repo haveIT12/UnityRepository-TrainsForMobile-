@@ -7,7 +7,8 @@ using UnityEngine.UI;
 public class UserInterfaceScript : MonoBehaviour
 {
     public MainSceneScript mainScript;
-    [Header ("TownUI")]
+    [Header("TownUI")]
+    public GameObject canvasCity;
     public TextMeshProUGUI townNameText;
     public TextMeshProUGUI businessNameText;
     public TextMeshProUGUI rawToProductText;
@@ -42,5 +43,13 @@ public class UserInterfaceScript : MonoBehaviour
     public void CloseTownRawInfo()
     {
         mainScript.townScript.TownRawCanvas.SetActive(false);
+    }
+    public void OpenTownRaw()
+    {
+        canvasCity.SetActive(true);
+    }
+    public void CloseTownRaw()
+    {
+        canvasCity.SetActive(false);
     }
 }

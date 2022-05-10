@@ -6,15 +6,16 @@ using UnityEngine.EventSystems;
 public class MainSceneScript : MonoBehaviour
 {
     public UserInterfaceScript uiScript;
-    public TownScript townScript;
+    public TownRawScript townScript;
     public GameObject town;
     public Camera cam;
     public CameraController camController;
     public float lookX;
     public float lookZ;
     public bool isGamePaused;
-    public bool isTownOpened;
+    public bool isTownRawOpened;
     public bool isTownRawInfoOpened;
+    public bool isNewGame = true;
     private IEnumerator camToTargetCoroutine;
     public void RaycastGo()
     {
@@ -31,7 +32,7 @@ public class MainSceneScript : MonoBehaviour
                 Debug.Log(_hit.collider.tag);
                 if (isGamePaused == false)
                 {
-                    if (isTownOpened == false)
+                    if (isTownRawOpened == false)
                     {
                         if (isTownRawInfoOpened == false)
                         {
@@ -57,11 +58,24 @@ public class MainSceneScript : MonoBehaviour
             }
         }
     }
+    public void OpenTownRaw()
+    {
+        isTownRawOpened = true;
+        townScript.OpenTownRaw();
+        uiScript.OpenTownRaw();
+    }
+    public void CloseTownRaw()
+    {
+        isTownRawOpened = false;
+        townScript.CloseTownRaw();
+        uiScript.CloseTownRaw();
+        CloseTownRawInfo();
+    }
     private void OpenTownRawInfo(RaycastHit _hit)
     {
         isTownRawInfoOpened = true;
 
-        townScript = _hit.collider.gameObject.GetComponent<TownScript>();
+        townScript = _hit.collider.gameObject.GetComponent<TownRawScript>();
         uiScript.OpenTownRawInfo();
         townScript.gameObject.tag = "CurrentCity";
 
