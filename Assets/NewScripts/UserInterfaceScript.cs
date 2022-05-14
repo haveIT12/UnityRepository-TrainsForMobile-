@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public class UserInterfaceScript : MonoBehaviour
 {
     public MainSceneScript mainScript;
+    public TownRawScript townRawScript;
     [Header("TownUI")]
     public GameObject canvasCity;
     public TextMeshProUGUI townNameText;
@@ -34,11 +35,35 @@ public class UserInterfaceScript : MonoBehaviour
     }
     void Update()
     {
-        
+        if (mainScript.isTownRawOpened == true)
+        {
+            Debug.Log("1");
+            productCountText.text = FormatNumsHelper.FormatNum(townRawScript.productCount);
+            rawCountText.text = FormatNumsHelper.FormatNum(townRawScript.rawCount);
+            productFullBar.fillAmount = mainScript.townScript.productCount / mainScript.townScript.maxStorageProduct;
+            rawFullBar.fillAmount = mainScript.townScript.rawCount / mainScript.townScript.maxStorageRaw;
+        }
     }
     public void OpenTownRawInfo()
     {
-        mainScript.townScript.TownRawCanvas.SetActive(true);
+        townRawScript.rawCount.ToString();
+        townRawScript.TownRawCanvas.SetActive(true);
+        townNameText.text = townRawScript.townName;
+        businessNameText.text = townRawScript.businessName;
+        publicBussinessSprite.sprite = townRawScript.businessSprite;
+        publicBussinessSprite1.sprite = townRawScript.businessSprite;
+        publicBussinessSprite2.sprite = townRawScript.businessSprite;
+        publicRawSprite.sprite = townRawScript.rawSprite;
+        publicRawSprite1.sprite = townRawScript.rawSprite;
+        publicRawSprite2.sprite = townRawScript.rawSprite;
+        rawToProductText.text = FormatNumsHelper.FormatNum(townRawScript.rawToProduct);
+        productFromRawText.text = FormatNumsHelper.FormatNum(townRawScript.productFromRaw);
+        newRawToProductText.text = FormatNumsHelper.FormatNum((townRawScript.rawToProduct - 10f));
+        newProductFromRawText.text = FormatNumsHelper.FormatNum((townRawScript.productFromRaw + 10f));
+        productCountText.text = FormatNumsHelper.FormatNum(townRawScript.productCount);
+        rawCountText.text = FormatNumsHelper.FormatNum(townRawScript.rawCount);
+        productFullBar.fillAmount = townRawScript.productCount / townRawScript.maxStorageProduct;
+        rawFullBar.fillAmount = townRawScript.rawCount / townRawScript.maxStorageRaw;
     }
     public void CloseTownRawInfo()
     {

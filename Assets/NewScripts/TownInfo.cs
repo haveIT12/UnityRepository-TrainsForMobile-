@@ -21,7 +21,7 @@ public class TownInfo : ScriptableObject
     [SerializeField]
     private int _maxStorageRaw;
     [SerializeField]
-    private int[] _upgradeCost;
+    private float[] _upgradeCost;
     [SerializeField]
     private int _rawToProduct;
     [SerializeField]
@@ -37,7 +37,7 @@ public class TownInfo : ScriptableObject
     public Sprite rawSprite => this._rawSprite;
     public int maxStorageProduct => this._maxStorageProduct;
     public int maxStorageRaw => this._maxStorageRaw;
-    public int[] upgradeCost => this._upgradeCost;
+    public float[] upgradeCost => this._upgradeCost;
     public int rawToProduct => this._rawToProduct;
     public int productFromRaw => this._productFromRaw;
     public float multiplier => this._multiplier;

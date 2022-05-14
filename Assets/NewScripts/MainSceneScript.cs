@@ -76,6 +76,7 @@ public class MainSceneScript : MonoBehaviour
         isTownRawInfoOpened = true;
 
         townScript = _hit.collider.gameObject.GetComponent<TownRawScript>();
+        uiScript.townRawScript = townScript;
         uiScript.OpenTownRawInfo();
         townScript.gameObject.tag = "CurrentCity";
 

@@ -2946,8 +2946,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 643059638}
-  - component: {fileID: 643059639}
   - component: {fileID: 643059640}
+  - component: {fileID: 643059639}
   m_Layer: 0
   m_Name: Clamento
   m_TagString: City
@@ -2988,16 +2988,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb963853ef0cc024a83f783a12a66955, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isTown: 0
+  isTown: 1
   townInfo: {fileID: 11400000, guid: 9913f0996d521e14a9f2e6264a8aabdb, type: 2}
   mainScript: {fileID: 2031655715}
   uiScript: {fileID: 825221810}
   TownNumber: 1
   townName: 
+  businessName: 
+  rawName: 
+  businessSprite: {fileID: 0}
+  rawSprite: {fileID: 0}
   maxStorageProduct: 0
   maxStorageRaw: 0
-  productCount: 1000
-  rawCount: 1900
+  upgradeCost: []
+  rawToProduct: 0
+  productFromRaw: 0
+  multiplier: 0
+  productCount: 0
+  rawCount: 0
   TownRawCanvas: {fileID: 900170834}
 --- !u!65 &643059640
 BoxCollider:
@@ -3697,6 +3705,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mainScript: {fileID: 2031655715}
+  townRawScript: {fileID: 0}
   canvasCity: {fileID: 1009358303}
   townNameText: {fileID: 1523438319}
   businessNameText: {fileID: 1127200044}
@@ -3771,8 +3780,16 @@ MonoBehaviour:
   uiScript: {fileID: 825221810}
   TownNumber: 2
   townName: 
+  businessName: 
+  rawName: 
+  businessSprite: {fileID: 0}
+  rawSprite: {fileID: 0}
   maxStorageProduct: 0
   maxStorageRaw: 0
+  upgradeCost: []
+  rawToProduct: 0
+  productFromRaw: 0
+  multiplier: 0
   productCount: 0
   rawCount: 0
   TownRawCanvas: {fileID: 1854481527}
@@ -4777,8 +4794,16 @@ MonoBehaviour:
   uiScript: {fileID: 825221810}
   TownNumber: 3
   townName: 
+  businessName: 
+  rawName: 
+  businessSprite: {fileID: 0}
+  rawSprite: {fileID: 0}
   maxStorageProduct: 0
   maxStorageRaw: 0
+  upgradeCost: []
+  rawToProduct: 0
+  productFromRaw: 0
+  multiplier: 0
   productCount: 0
   rawCount: 0
   TownRawCanvas: {fileID: 1343336809}
@@ -6965,7 +6990,7 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 1
-  m_FillAmount: 0.25
+  m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
@@ -7714,8 +7739,8 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1594521036}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -43}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 662121490}
@@ -7723,7 +7748,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1.2, y: 0.6}
+  m_AnchoredPosition: {x: 6, y: 0}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1594521038
@@ -8405,7 +8430,7 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 1
-  m_FillAmount: 0.74
+  m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
@@ -8647,7 +8672,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 4294967295
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &1844180646
 Transform:
@@ -9848,7 +9873,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 4294967295
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!114 &2031655715
 MonoBehaviour:
