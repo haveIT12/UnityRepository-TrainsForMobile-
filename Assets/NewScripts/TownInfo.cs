@@ -32,6 +32,10 @@ public class TownInfo : ScriptableObject
     private float _multiplier;
     [SerializeField]
     private float _timeForProduct;
+    [SerializeField]
+    private float[] _newProductFromRaw;
+    [SerializeField]
+    private float[] _newRawToProduct;
 
     public string townName => this._townName;
     public string businessName => this._businessName;
@@ -42,6 +46,8 @@ public class TownInfo : ScriptableObject
     public Sprite rawSprite => this._rawSprite;
     public int maxStorageProduct => this._maxStorageProduct;
     public int maxStorageRaw => this._maxStorageRaw;
+    public float[] newProductFromRaw => this._newProductFromRaw;
+    public float[] newRawToProduct => this._newRawToProduct;
     public float[] upgradeCost => this._upgradeCost;
     public int rawToProduct => this._rawToProduct;
     public int productFromRaw => this._productFromRaw;

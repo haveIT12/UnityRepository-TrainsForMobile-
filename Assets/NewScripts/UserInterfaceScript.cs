@@ -52,14 +52,15 @@ public class UserInterfaceScript : MonoBehaviour
     }
     void Update()
     {
+
         if (mainScript.isTownRawOpened == true)
         {
             if (townRawScript.isTown == true)
             {
                 productCountText.text = FormatNumsHelper.FormatNum(townRawScript.productCount);
                 rawCountText.text = FormatNumsHelper.FormatNum(townRawScript.rawCount);
-                productFullBar.fillAmount = mainScript.townScript.productCount / mainScript.townScript.maxStorageProduct;
-                rawFullBar.fillAmount = mainScript.townScript.rawCount / mainScript.townScript.maxStorageRaw;
+                productFullBar.fillAmount = mainScript.townRawScript.productCount / mainScript.townRawScript.maxStorageProduct;
+                rawFullBar.fillAmount = mainScript.townRawScript.rawCount / mainScript.townRawScript.maxStorageRaw;
                 rawToProductFullBar.fillAmount = townRawScript.fullBar.fillAmount;
                 if(townRawScript.upgradeLvl > 3){
                     upgradeButton.GetComponent<Image>().color = new Color(103, 103, 103);

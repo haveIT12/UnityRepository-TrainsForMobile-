@@ -7,7 +7,7 @@ public class MainSceneScript : MonoBehaviour
 {
     public PlayerData pData;
     public UserInterfaceScript uiScript;
-    public TownRawScript townScript;
+    public TownRawScript townRawScript;
     public GameObject town;
     public Camera cam;
     public CameraController camController;
@@ -60,7 +60,7 @@ public class MainSceneScript : MonoBehaviour
             }
         }
     }
-    public void Upgrade() => townScript.Upgrade();
+    public void Upgrade() => townRawScript.Upgrade();
     public void OpenTownRaw()
     {
         isTownRawOpened = true;
@@ -78,20 +78,20 @@ public class MainSceneScript : MonoBehaviour
     {
         isTownRawInfoOpened = true;
 
-        townScript = _hit.collider.gameObject.GetComponent<TownRawScript>();
-        uiScript.townRawScript = townScript;
-        townScript.OpenTownRawInfo();
-        townScript.gameObject.tag = "CurrentCity";
+        townRawScript = _hit.collider.gameObject.GetComponent<TownRawScript>();
+        uiScript.townRawScript = townRawScript;
+        townRawScript.OpenTownRawInfo();
+        townRawScript.gameObject.tag = "CurrentCity";
 
-        camToTargetCoroutine = CamToTarget(townScript.gameObject);
+        camToTargetCoroutine = CamToTarget(townRawScript.gameObject);
         StartCoroutine(camToTargetCoroutine);
     }
     private void CloseTownRawInfo()
     {
         isTownRawInfoOpened = false;
 
-        townScript.gameObject.tag = "City";
-        townScript.CloseTownRawInfo();
+        townRawScript.gameObject.tag = "City";
+        townRawScript.CloseTownRawInfo();
 
         StopCoroutine(camToTargetCoroutine);
     }

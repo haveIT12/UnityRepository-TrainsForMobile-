@@ -53,6 +53,8 @@ public class TownRawScript : MonoBehaviour
             maxStorageProduct = townInfo.maxStorageProduct;
             upgradeCost = townInfo.upgradeCost;
             productFromRaw = townInfo.productFromRaw;
+            newProductFromRaw = townInfo.newProductFromRaw;
+            newRawToProduct = townInfo.newRawToProduct;
         }
         else
             rawSpriteImage = townInfo.rawSpriteImage;
