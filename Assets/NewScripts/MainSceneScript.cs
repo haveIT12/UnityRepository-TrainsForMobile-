@@ -5,11 +5,13 @@ using UnityEngine.EventSystems;
 
 public class MainSceneScript : MonoBehaviour
 {
+    public PlayerData pData;
     public UserInterfaceScript uiScript;
     public TownRawScript townScript;
     public GameObject town;
     public Camera cam;
     public CameraController camController;
+    public GameObject camRig;
     public float lookX;
     public float lookZ;
     public bool isGamePaused;
@@ -58,17 +60,18 @@ public class MainSceneScript : MonoBehaviour
             }
         }
     }
+    public void Upgrade() => townScript.Upgrade();
     public void OpenTownRaw()
     {
         isTownRawOpened = true;
-        townScript.OpenTownRaw();
         uiScript.OpenTownRaw();
+        camRig.GetComponent<CameraController>().enabled = false;
     }
     public void CloseTownRaw()
     {
         isTownRawOpened = false;
-        townScript.CloseTownRaw();
         uiScript.CloseTownRaw();
+        camRig.GetComponent<CameraController>().enabled = true;
         CloseTownRawInfo();
     }
     private void OpenTownRawInfo(RaycastHit _hit)
@@ -77,7 +80,7 @@ public class MainSceneScript : MonoBehaviour
 
         townScript = _hit.collider.gameObject.GetComponent<TownRawScript>();
         uiScript.townRawScript = townScript;
-        uiScript.OpenTownRawInfo();
+        townScript.OpenTownRawInfo();
         townScript.gameObject.tag = "CurrentCity";
 
         camToTargetCoroutine = CamToTarget(townScript.gameObject);
@@ -88,7 +91,7 @@ public class MainSceneScript : MonoBehaviour
         isTownRawInfoOpened = false;
 
         townScript.gameObject.tag = "City";
-        uiScript.CloseTownRawInfo();
+        townScript.CloseTownRawInfo();
 
         StopCoroutine(camToTargetCoroutine);
     }
