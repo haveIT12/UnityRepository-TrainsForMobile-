@@ -8,17 +8,18 @@ public class MainSceneScript : MonoBehaviour
     public PlayerData pData;
     public UserInterfaceScript uiScript;
     public TownRawScript townRawScript;
+    public RailRoadSystemScript rsScript;
     public GameObject town;
     public Camera cam;
     public CameraController camController;
     public GameObject camRig;
-    public float lookX;
-    public float lookZ;
+
     public bool isGamePaused;
     public bool isTownRawOpened;
     public bool isTownRawInfoOpened;
     public bool isNewGame = true;
-    private IEnumerator camToTargetCoroutine;
+    public bool isBuildRailOpen;
+    public IEnumerator camToTargetCoroutine;
     public void RaycastGo()
     {
         Ray ray = cam.ScreenPointToRay(new Vector2(Input.mousePosition.x, Input.mousePosition.y));
@@ -31,31 +32,50 @@ public class MainSceneScript : MonoBehaviour
             }
             else
             {
-                Debug.Log(_hit.collider.tag);
                 if (isGamePaused == false)
                 {
                     if (isTownRawOpened == false)
                     {
-                        if (isTownRawInfoOpened == false)
+                        if (isBuildRailOpen == false)
                         {
-                            if (_hit.collider.tag == "City")
-                                OpenTownRawInfo(_hit);
+                            if (isTownRawInfoOpened == false)
+                            {
+                                if (_hit.collider.tag == "City")
+                                {
+                                    OpenTownRawInfo(_hit);
+                                }
+                                    
+                            }
+                            else
+                            {
+                                if (_hit.collider.transform.parent.tag == "City")
+                                {
+                                    CloseTownRawInfo();
+                                    OpenTownRawInfo(_hit);
+                                }
+                                else
+                                    CloseTownRawInfo();
+                            }
                         }
                         else
                         {
-                            if (_hit.collider.tag == "City")
+                            if (isTownRawInfoOpened == true)
+                                CloseTownRawInfo();
+                            if (_hit.collider.transform.parent != null && _hit.collider.transform.parent.tag == "Road")
                             {
-                                CloseTownRawInfo();
-                                OpenTownRawInfo(_hit);
+                                rsScript.CloseSelect();
+                                rsScript.SelectRail(_hit);
                             }
+                            else if (_hit.collider.transform.parent != null && _hit.collider.transform.parent.tag != "Road")
+                                rsScript.CloseSelect();
                             else
-                                CloseTownRawInfo();
+                                rsScript.CloseSelect();
                         }
                     }
                 }
                 else
-                {
-
+                { 
+                
                 }
             }
         }
@@ -83,7 +103,7 @@ public class MainSceneScript : MonoBehaviour
         townRawScript.OpenTownRawInfo();
         townRawScript.gameObject.tag = "CurrentCity";
 
-        camToTargetCoroutine = CamToTarget(townRawScript.gameObject);
+        camToTargetCoroutine = CamToTarget(townRawScript.toCam, true, 5f);
         StartCoroutine(camToTargetCoroutine);
     }
     private void CloseTownRawInfo()
@@ -95,27 +115,33 @@ public class MainSceneScript : MonoBehaviour
 
         StopCoroutine(camToTargetCoroutine);
     }
-    IEnumerator CamToTarget(GameObject target)
+    public IEnumerator CamToTarget(GameObject target, bool isZoom, float zoom)
     {
         float elapsedTime = 0;
         float waitTime = 1f;
 
-        Vector3 gotopos = new Vector3(target.transform.position.x - lookX, camController.newPosition.y, target.gameObject.transform.position.z - lookZ);
+        Vector3 gotopos = new Vector3(target.transform.position.x, camRig.transform.position.y, target.transform.position.z);
 
         while (elapsedTime < waitTime)
         {
             if (elapsedTime >= 0.2f)
             {
                 if (camController.touchZero.phase == TouchPhase.Moved)
+                {
                     StopCoroutine(camToTargetCoroutine);
+                    yield return null;
+                }
             }
-
+            if (isZoom == true)
+            {
+                camController.newZoom = Mathf.Lerp(camController.newZoom, zoom, (elapsedTime / waitTime));
+            }
             camController.newPosition = Vector3.Lerp(camController.newPosition, gotopos, (elapsedTime / waitTime));
             elapsedTime += Time.deltaTime;
             yield return null;
-
         }
         camController.newPosition = gotopos;
+        camController.newZoom = zoom;
         yield return null;
     }
 }

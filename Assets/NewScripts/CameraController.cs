@@ -113,6 +113,10 @@ public class CameraController : MonoBehaviour
         Mathf.Clamp(transform.position.x, leftLimit, rightLimit),
         transform.position.y,
         Mathf.Clamp(transform.position.z, backLimit, forwardLimit));
+        newPosition = new Vector3(
+        Mathf.Clamp(newPosition.x, leftLimit, rightLimit),
+        transform.position.y,
+        Mathf.Clamp(newPosition.z, backLimit, forwardLimit));
         cam.orthographicSize = Mathf.Lerp(cam.orthographicSize, newZoom, Time.deltaTime * zoomTime);
         cam.orthographicSize = Mathf.Clamp( cam.orthographicSize, zoomMin, zoomMax);
     }

@@ -10,6 +10,7 @@ public class TownRawScript : MonoBehaviour
     public MainSceneScript mainScript;
     public UserInterfaceScript uiScript;
     [Header("InfoCanvasObjects")]
+    public GameObject toCam;
     public TextMeshProUGUI townNameText;
     public Image fullBar;
     public Image publicBussinessSprite;
@@ -43,9 +44,13 @@ public class TownRawScript : MonoBehaviour
     public float productCount;
     public float rawCount;
 
+    private WaitForSeconds twoSeconds;
+    private WaitForSeconds deltatime;
     public GameObject TownRawCanvas;
     void Awake()
     {
+        twoSeconds = new WaitForSeconds(2f);
+        deltatime = new WaitForSeconds(Time.fixedDeltaTime);
         if (isTown == true)
         {
             businessName = townInfo.businessName;
@@ -94,7 +99,7 @@ public class TownRawScript : MonoBehaviour
             {
                 if (mainScript.pData.money >= upgradeCost[upgradeLvl])
                 {
-                    mainScript.pData.money -= upgradeCost[upgradeLvl];
+                    mainScript.pData.ChangeMoney(this.gameObject, -upgradeCost[upgradeLvl]);
                     upgradeLvl++;
                     productFromRaw = newProductFromRaw[upgradeLvl];
                     rawToProduct = newRawToProduct[upgradeLvl];
@@ -119,6 +124,7 @@ public class TownRawScript : MonoBehaviour
     }
     private void CheckProductReady()
     {
+        string msg;
         if (isTown == true)
         {
             if (rawCount >= rawToProduct)
@@ -130,14 +136,18 @@ public class TownRawScript : MonoBehaviour
                 }
                 else
                 {
-                    MSG = Msg(2, townName + " Storage is Full!");
+                    msg = townName + " Storage is Full!";
+                    MSG = Msg(msg);
                     StartCoroutine(MSG);
+                    msg = null;
                 }
             }
             else
             {
-                MSG = Msg(2, townName + " Raw is not enough. Need to make " + productFromRaw + " product: " + rawToProduct);
+                msg = townName + " Raw is not enough. Need to make " + productFromRaw + " product: " + rawToProduct;
+                MSG = Msg(msg);
                 StartCoroutine(MSG);
+                msg = null;
             }
         }
         else
@@ -149,8 +159,9 @@ public class TownRawScript : MonoBehaviour
             }
             else
             {
-                MSG = Msg(2, "Storage is Full!");
+                MSG = Msg("Storage is Full!");
                 StartCoroutine(MSG);
+                msg = null;
             }
         }
         
@@ -158,20 +169,20 @@ public class TownRawScript : MonoBehaviour
     private void ChangeProduct(float value)
     {
         productCount += value;
-        Debug.Log("Product Changed : " + value + " New Product: " + productCount);
+        //Debug.Log("Product Changed : " + value + " New Product: " + productCount);
     }
     private void ChangeRaw(float value)
     {
         rawCount += value;
-        Debug.Log("Raw Changed : " + value + " New Raw: " + rawCount);
+        //Debug.Log("Raw Changed : " + value + " New Raw: " + rawCount);
     }
     private IEnumerator RawToProduct()
     {
         if (isTown == true)
         {
-            for (timeCurrent = 0; timeCurrent < timeForProduct; timeCurrent += Time.deltaTime)
+            for (timeCurrent = 0; timeCurrent < timeForProduct; timeCurrent += Time.fixedDeltaTime)
             {
-                yield return new WaitForSeconds(Time.deltaTime);
+                yield return deltatime;
             }
             ChangeProduct(+productFromRaw);
             ChangeRaw(-rawToProduct);
@@ -182,7 +193,7 @@ public class TownRawScript : MonoBehaviour
         {
             for (timeCurrent = 0; timeCurrent < timeForProduct; timeCurrent += Time.fixedDeltaTime)
             {
-                yield return new WaitForSeconds(Time.fixedDeltaTime);
+                yield return deltatime;
             }
             timeCurrent = 0;
             ChangeRaw(+rawToProduct);
@@ -190,10 +201,10 @@ public class TownRawScript : MonoBehaviour
         }
 
     }
-    private IEnumerator Msg(float value, string msg)
+    private IEnumerator Msg(string msg)
     {
-        Debug.Log(msg);
-        yield return new WaitForSeconds(value);
+        //Debug.Log(msg);
+        yield return twoSeconds;
         CheckProductReady();
     }
 }

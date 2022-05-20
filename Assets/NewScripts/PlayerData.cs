@@ -13,6 +13,11 @@ public class PlayerData : MonoBehaviour
     {
         coins.text = FormatNumsHelper.FormatNum(money);
     }
+    public void ChangeMoney(GameObject sender, float count)
+    {
+        money += count;
+        Debug.Log("Money " + count + "From: " + sender + "Balance: " + money);
+    }
     public void AddCoins()
     {
         money += 1000f;

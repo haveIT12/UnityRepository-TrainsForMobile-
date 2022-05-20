@@ -8,6 +8,11 @@ public class UserInterfaceScript : MonoBehaviour
 {
     public MainSceneScript mainScript;
     public TownRawScript townRawScript;
+    public RailRoadSystemScript rsScript;
+    [Header("MainUI")]
+    public GameObject canvasMainUI;
+    public GameObject btnBuildRail;
+    [Space]
     [Header("TownUI")]
     public GameObject canvasTown;
     public TextMeshProUGUI townNameText;
@@ -43,7 +48,12 @@ public class UserInterfaceScript : MonoBehaviour
     public Image rawFullBarSecond;
     public Image rawFullBarThird;
     public Image rawToRawFullBar;
-
+    [Space]
+    [Header("BuildRailUI")]
+    public GameObject canvasBuildRail;
+    public GameObject cancelBuild;
+    public GameObject buyRail;
+    public Text priceRoadText;
 
 
     void Start()
@@ -52,7 +62,6 @@ public class UserInterfaceScript : MonoBehaviour
     }
     void Update()
     {
-
         if (mainScript.isTownRawOpened == true)
         {
             if (townRawScript.isTown == true)
@@ -85,6 +94,18 @@ public class UserInterfaceScript : MonoBehaviour
             }
 
         }
+        if (mainScript.isBuildRailOpen == true)
+        {
+            if (rsScript.roadSelected != null)
+            {
+                if (mainScript.pData.money >= rsScript.roadSelected.price)
+                {
+                    buyRail.GetComponent<Button>().interactable = true;
+                }
+                else
+                    buyRail.GetComponent<Button>().interactable = false;
+            }
+        }
     }
     public void OpenTownRaw()
     {
@@ -101,8 +122,6 @@ public class UserInterfaceScript : MonoBehaviour
             publicRawSprite2.sprite = townRawScript.rawSprite;
             rawToProductText.text = FormatNumsHelper.FormatNum(townRawScript.rawToProduct);
             productFromRawText.text = FormatNumsHelper.FormatNum(townRawScript.productFromRaw);
-            newRawToProductText.text = FormatNumsHelper.FormatNum((townRawScript.newRawToProduct[townRawScript.upgradeLvl+1]));
-            newProductFromRawText.text = FormatNumsHelper.FormatNum((townRawScript.newProductFromRaw[townRawScript.upgradeLvl+1]));
             productCountText.text = FormatNumsHelper.FormatNum(townRawScript.productCount);
             rawCountText.text = FormatNumsHelper.FormatNum(townRawScript.rawCount);
             productFullBar.fillAmount = townRawScript.productCount / townRawScript.maxStorageProduct;
@@ -112,9 +131,13 @@ public class UserInterfaceScript : MonoBehaviour
                 upgradeButton.GetComponent<Image>().color = new Color(103, 103, 103);
                 upgradeButton.interactable = false;
                 upgradeCostText.text = FormatNumsHelper.FormatNum(townRawScript.upgradeCost[townRawScript.upgradeLvl]) + "$";
+                newRawToProductText.text = FormatNumsHelper.FormatNum((townRawScript.newRawToProduct[townRawScript.upgradeLvl + 1]));
+                newProductFromRawText.text = FormatNumsHelper.FormatNum((townRawScript.newProductFromRaw[townRawScript.upgradeLvl + 1]));
             }
             else
             {
+                newRawToProductText.text = FormatNumsHelper.FormatNum((townRawScript.newRawToProduct[townRawScript.upgradeLvl]));
+                newProductFromRawText.text = FormatNumsHelper.FormatNum((townRawScript.newProductFromRaw[townRawScript.upgradeLvl]));
                 upgradeCostText.text = "MaxLvl";
                 upgradeButton.GetComponent<Image>().color = new Color(103, 103, 103);
                 upgradeButton.interactable = false;
