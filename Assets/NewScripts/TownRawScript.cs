@@ -46,12 +46,10 @@ public class TownRawScript : MonoBehaviour
     public float rawCount;
 
     private WaitForSeconds twoSeconds;
-    private WaitForSeconds deltatime;
     public GameObject TownRawCanvas;
     void Awake()
     {
         twoSeconds = new WaitForSeconds(2f);
-        deltatime = new WaitForSeconds(Time.deltaTime);
         if (isTown == true)
         {
             businessName = townInfo.businessName;
