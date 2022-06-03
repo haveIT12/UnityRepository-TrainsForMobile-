@@ -208,31 +208,6 @@ public class TownRawScript : MonoBehaviour
         rawCount += value;
         //Debug.Log("Raw Changed : " + value + " New Raw: " + rawCount);
     }
-    /*private IEnumerator RawToProduct()
-    {
-        if (isTown == true)
-        {
-            for (timeCurrent = 0; timeCurrent < timeForProduct; timeCurrent += Time.deltaTime)
-            {
-                yield return deltatime;
-            }
-            ChangeProduct(+productFromRaw);
-            ChangeRaw(-rawToProduct);
-            timeCurrent = 0;
-            CheckProductReady();
-        }
-        else
-        {
-            for (timeCurrent = 0; timeCurrent < timeForProduct; timeCurrent += Time.deltaTime)
-            {
-                yield return deltatime;
-            }
-            timeCurrent = 0;
-            ChangeRaw(+rawToProduct);
-            CheckProductReady();
-        }
-
-    }*/
     private IEnumerator Msg(string msg)
     {
         //Debug.Log(msg);
