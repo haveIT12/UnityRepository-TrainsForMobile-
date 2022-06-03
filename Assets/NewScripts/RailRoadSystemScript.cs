@@ -6,67 +6,59 @@ public class RailRoadSystemScript : MonoBehaviour
 {
     public GameObject[] road;
     public RailRoadScript roadSelected;
-    public MainSceneScript mScript;
-    public UserInterfaceScript uScript;
-    public GameObject toCam;
-    void Start()
-    {
-
-    }
-    void Update()
-    {
-
-    }
+    public MainSceneScript mainScript;
+    public UserInterfaceScript uiScript;
     public void BuyRail()
     {
-        mScript.pData.ChangeMoney(this.gameObject, -roadSelected.price);
+        mainScript.pData.ChangeMoney(this.gameObject, -roadSelected.price);
         roadSelected.isRailBuild = true;
-        roadSelected.CloseSelect("BuildedRoad", 0);
-        uScript.buyRail.SetActive(false);
+        roadSelected.gameObject.GetComponent<MeshRenderer>().material = roadSelected.mat[0];
+        uiScript.buyRail.SetActive(false);
         roadSelected = null;
     }
     public void OpenBuild()
     {
-        mScript.isBuildRailOpen = true;
+        if (mainScript.isTownRawInfoOpened == true)
+            mainScript.townRawScript.CloseTownRawInfo();
+        uiScript.canvasMainUI.SetActive(false);
+        mainScript.isBuildRailOpen = true;
         for (int i = 0; i < road.Length; i++)
         {
             if (road[i].GetComponent<RailRoadScript>().isRailBuild == false)
                 road[i].GetComponent<RailRoadScript>().Spawn(1);
         }
-        uScript.canvasBuildRail.SetActive(true);
-        uScript.buyRail.SetActive(false);
-        mScript.camToTargetCoroutine = mScript.CamToTarget(toCam, true, 15f);
-        mScript.StartCoroutine(mScript.camToTargetCoroutine);
+        uiScript.canvasBuildRail.SetActive(true);
+        uiScript.buyRail.SetActive(false);
+        mainScript.camToTargetCoroutine = mainScript.CamToTarget(gameObject, true, 15f);
+        mainScript.StartCoroutine(mainScript.camToTargetCoroutine);
     }
     public void CloseBuild()
     {
-        mScript.isBuildRailOpen = false;
+        uiScript.canvasMainUI.SetActive(true);
+        mainScript.isBuildRailOpen = false;
         for (int i = 0; i < road.Length; i++)
         {
             if (road[i].GetComponent<RailRoadScript>().isRailBuild == false)
                 road[i].GetComponent<RailRoadScript>().Hide();
         }
-        uScript.canvasBuildRail.SetActive(false);
+        uiScript.canvasBuildRail.SetActive(false);
     }
-    public void SelectRail(RaycastHit _hit)
+    public void CheckIsAnySelected()
     {
-        roadSelected = _hit.collider.gameObject.GetComponentInParent<RailRoadScript>();
-        if(roadSelected.isRailBuild == false)
+        bool anySelected = false;
+        for (int i = 0; i < road.Length; i++)
         {
-            roadSelected.RoadSelect();
-            mScript.camToTargetCoroutine = mScript.CamToTarget(roadSelected.toCam, true, 15f);
-            mScript.StartCoroutine(mScript.camToTargetCoroutine);
-            uScript.buyRail.SetActive(true);
-            uScript.priceRoadText.text = roadSelected.price.ToString();
+            if (road[i].GetComponent<RailRoadScript>().isRailBuild == false)
+            { 
+                if (road[i].GetComponent<RailRoadScript>().isRailSelected == true)
+                {
+                    anySelected = true;
+                }   
+            }  
         }
-    }
-    public void CloseSelect()
-    {
-        if (roadSelected != null)
-        { 
-            roadSelected.CloseSelect("Road", 1);
-            uScript.buyRail.SetActive(false);
+        if (anySelected == false)
+        {
+            uiScript.buyRail.SetActive(false);
         }
-
     }
 }

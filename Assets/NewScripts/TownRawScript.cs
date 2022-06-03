@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.EventSystems;
 
 public class TownRawScript : MonoBehaviour
 {
     public TownInfo townInfo;
     public MainSceneScript mainScript;
     public UserInterfaceScript uiScript;
+    private bool isTownRawOpen;
     [Header("InfoCanvasObjects")]
-    public GameObject toCam;
     public TextMeshProUGUI townNameText;
     public Image fullBar;
     public Image publicBussinessSprite;
@@ -50,7 +51,7 @@ public class TownRawScript : MonoBehaviour
     void Awake()
     {
         twoSeconds = new WaitForSeconds(2f);
-        deltatime = new WaitForSeconds(Time.fixedDeltaTime);
+        deltatime = new WaitForSeconds(Time.deltaTime);
         if (isTown == true)
         {
             businessName = townInfo.businessName;
@@ -75,21 +76,51 @@ public class TownRawScript : MonoBehaviour
     {
         CheckProductReady();
     }
-    void FixedUpdate()
+    private void Update()
     {
-        fullBar.fillAmount = timeCurrent / timeForProduct;
-    }
-    public void OpenTownRawInfo()
-    {
-        TownRawCanvas.SetActive(true);
-        townNameText.text = townName;
-        publicRawSprite.sprite = rawSprite;
-        if (isTown == true)
-            publicBussinessSprite.sprite = businessSprite;
-    }
-    public void CloseTownRawInfo()
-    {
-        TownRawCanvas.SetActive(false);
+        if (isProductReady == true)
+        {
+            timeCurrent += Time.deltaTime;
+            if (timeCurrent > timeForProduct)
+            {
+                if (isTown == true)
+                {
+                    ChangeProduct(+productFromRaw);
+                    ChangeRaw(-rawToProduct);
+                    isProductReady = false;
+                    timeCurrent = 0;
+                    CheckProductReady();
+                }
+                else
+                {
+                    ChangeRaw(+rawToProduct);
+                    isProductReady = false;
+                    timeCurrent = 0;
+                    CheckProductReady();
+                }
+            }
+            
+        }
+        if (isTownRawOpen == true)
+        { 
+            fullBar.fillAmount = timeCurrent / timeForProduct;
+            if (Input.GetMouseButtonDown(0))
+            { 
+                Ray ray = mainScript.cam.ScreenPointToRay(new Vector2(Input.mousePosition.x, Input.mousePosition.y));
+                RaycastHit _hit;
+                if (Physics.Raycast(ray, out _hit))
+                {
+                    if (EventSystem.current.IsPointerOverGameObject(Input.touches[0].fingerId))
+                    {
+                        return;
+                    }
+                    if (_hit.collider.gameObject.name != gameObject.name)
+                    {
+                        CloseTownRawInfo();
+                    }
+                }
+            }   
+        }    
     }
     public void Upgrade()
     {
@@ -131,11 +162,11 @@ public class TownRawScript : MonoBehaviour
             {
                 if (productCount < maxStorageProduct && productCount+productFromRaw < maxStorageProduct)
                 {
-                    RTP = RawToProduct();
-                    StartCoroutine(RTP);
+                    isProductReady = true;
                 }
                 else
                 {
+                    isProductReady = false;
                     msg = townName + " Storage is Full!";
                     MSG = Msg(msg);
                     StartCoroutine(MSG);
@@ -144,6 +175,7 @@ public class TownRawScript : MonoBehaviour
             }
             else
             {
+                isProductReady = false;
                 msg = townName + " Raw is not enough. Need to make " + productFromRaw + " product: " + rawToProduct;
                 MSG = Msg(msg);
                 StartCoroutine(MSG);
@@ -154,11 +186,11 @@ public class TownRawScript : MonoBehaviour
         {
             if (rawCount < maxStorageRaw)
             {
-                RTP = RawToProduct();
-                StartCoroutine(RTP);
+                isProductReady = true;
             }
             else
             {
+                isProductReady = false;
                 MSG = Msg("Storage is Full!");
                 StartCoroutine(MSG);
                 msg = null;
@@ -176,11 +208,11 @@ public class TownRawScript : MonoBehaviour
         rawCount += value;
         //Debug.Log("Raw Changed : " + value + " New Raw: " + rawCount);
     }
-    private IEnumerator RawToProduct()
+    /*private IEnumerator RawToProduct()
     {
         if (isTown == true)
         {
-            for (timeCurrent = 0; timeCurrent < timeForProduct; timeCurrent += Time.fixedDeltaTime)
+            for (timeCurrent = 0; timeCurrent < timeForProduct; timeCurrent += Time.deltaTime)
             {
                 yield return deltatime;
             }
@@ -191,7 +223,7 @@ public class TownRawScript : MonoBehaviour
         }
         else
         {
-            for (timeCurrent = 0; timeCurrent < timeForProduct; timeCurrent += Time.fixedDeltaTime)
+            for (timeCurrent = 0; timeCurrent < timeForProduct; timeCurrent += Time.deltaTime)
             {
                 yield return deltatime;
             }
@@ -200,11 +232,50 @@ public class TownRawScript : MonoBehaviour
             CheckProductReady();
         }
 
-    }
+    }*/
     private IEnumerator Msg(string msg)
     {
         //Debug.Log(msg);
         yield return twoSeconds;
         CheckProductReady();
+    }
+    public void OnMouseDown()
+    {
+        if (mainScript.isGamePaused == false)
+        {
+            if (mainScript.isBuildRailOpen == false)
+            {
+                if (mainScript.isTownRawInfoOpened == false)
+                {
+                    if(isTownRawOpen == false)
+                        OpenTownRawInfo();
+                }
+            }
+        }
+    }
+    public void CloseTownRawInfo()
+    {
+        TownRawCanvas.SetActive(false);
+
+        mainScript.isTownRawInfoOpened = false;
+        isTownRawOpen = false;
+        mainScript.StopCoroutine(mainScript.camToTargetCoroutine);
+    }
+    public void OpenTownRawInfo()
+    {
+        isTownRawOpen = true;
+        mainScript.isTownRawInfoOpened = true;
+        mainScript.townRawScript = this;
+
+        uiScript.townRawScript = this;
+
+        mainScript.camToTargetCoroutine = mainScript.CamToTarget(gameObject, true, 5f);
+        mainScript.StartCoroutine(mainScript.camToTargetCoroutine);
+
+        TownRawCanvas.SetActive(true);
+        townNameText.text = townName;
+        publicRawSprite.sprite = rawSprite;
+        if (isTown == true)
+            publicBussinessSprite.sprite = businessSprite;
     }
 }

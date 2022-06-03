@@ -5,20 +5,21 @@ using TMPro;
 
 public class PlayerData : MonoBehaviour
 {
-    public TextMeshProUGUI coins;
     public MainSceneScript mainScript;
     public float money;
-    public float diamonds;
-    private void Update()
-    {
-        coins.text = FormatNumsHelper.FormatNum(money);
-    }
+    public float tickets;
+    public bool[] trainUnlocked;
     public void ChangeMoney(GameObject sender, float count)
     {
         money += count;
         Debug.Log("Money " + count + "From: " + sender + "Balance: " + money);
     }
-    public void AddCoins()
+    public void ChangeTickets(GameObject sender, float count)
+    {
+        tickets += count;
+        Debug.Log("Tickets " + count + "From: " + sender + "Balance: " + tickets);
+    }
+    /*public void AddCoins()
     {
         money += 1000f;
     }
@@ -34,5 +35,5 @@ public class PlayerData : MonoBehaviour
         {
             mainScript.townRawScript.rawCount += 500f;
         }
-    }
+    }*/
 }

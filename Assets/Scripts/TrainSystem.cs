@@ -10,7 +10,7 @@ public class TrainSystem : MonoBehaviour
     public GameObject[] trains;
     public GameObject[] SpawnPos;
     public GameObject trainClone;
-    public TrainScript tScript;
+    //public TrainScript tScript;
     public Road[] road;
     public int numberTrain;
     void Start()
@@ -25,7 +25,7 @@ public class TrainSystem : MonoBehaviour
     { 
         
     }
-    public void BuyTrain1()
+    /*public void BuyTrain1()
     {
         trainClone = Instantiate(trains[0], SpawnPos[0].transform.position, trains[0].transform.rotation);
         trainClone.gameObject.GetComponent<TrainScript>().number = numberTrain;
@@ -38,5 +38,5 @@ public class TrainSystem : MonoBehaviour
         trainClone.gameObject.GetComponent<TrainScript>().number = numberTrain;
         trainClone.gameObject.GetComponent<TrainScript>().road = road[1];
         numberTrain++;
-    }
+    }*/
 }

@@ -50,7 +50,6 @@ public class CameraController : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             multiTouch = false;
-            mainScript.RaycastGo();
         }
         if (Input.touchCount > 0)
         {
