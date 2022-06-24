@@ -13,6 +13,8 @@ public class MainSceneScript : MonoBehaviour
     public Camera cam;
     public CameraController camController;
     public GameObject camRig;
+    public List<TownRawScript> trScript;
+    public List<TownRawScript> allTowns;
 
     public bool isGamePaused;
     public bool isTownRawOpened;
@@ -22,6 +24,7 @@ public class MainSceneScript : MonoBehaviour
     public bool isDepotOpen;
     public bool isTrainShopOpen;
     public bool isTrainMenuOpen;
+    public bool isSelectWayOpen;
     public IEnumerator camToTargetCoroutine;
     public void Upgrade() => townRawScript.Upgrade();
     public void OpenTownRaw()

@@ -18,6 +18,10 @@ public class RailRoadSystemScript : MonoBehaviour
     }
     public void OpenBuild()
     {
+        for (int b = 0; b < uiScript.tsScript.train.Count; b++)
+        { 
+            uiScript.tsScript.train[b].GetComponent<TrainScript>().tPointer.Hide();
+        }
         if (mainScript.isTownRawInfoOpened == true)
             mainScript.townRawScript.CloseTownRawInfo();
         uiScript.canvasMainUI.SetActive(false);
@@ -41,24 +45,8 @@ public class RailRoadSystemScript : MonoBehaviour
             if (road[i].GetComponent<RailRoadScript>().isRailBuild == false)
                 road[i].GetComponent<RailRoadScript>().Hide();
         }
+        if (roadSelected != null)
+            roadSelected.CloseSelect();
         uiScript.canvasBuildRail.SetActive(false);
-    }
-    public void CheckIsAnySelected()
-    {
-        bool anySelected = false;
-        for (int i = 0; i < road.Length; i++)
-        {
-            if (road[i].GetComponent<RailRoadScript>().isRailBuild == false)
-            { 
-                if (road[i].GetComponent<RailRoadScript>().isRailSelected == true)
-                {
-                    anySelected = true;
-                }   
-            }  
-        }
-        if (anySelected == false)
-        {
-            uiScript.buyRail.SetActive(false);
-        }
     }
 }

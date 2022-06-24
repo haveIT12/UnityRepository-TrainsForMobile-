@@ -10,6 +10,10 @@ public class TownInfo : ScriptableObject
     private string _businessName;
     [SerializeField]
     private string _rawName;
+    [SerializeField]
+    private string _typeRaw;
+    [SerializeField]
+    private string _typeProduct;
 
     [SerializeField]
     private Sprite _rawSpriteImage;
@@ -40,6 +44,8 @@ public class TownInfo : ScriptableObject
     public string townName => this._townName;
     public string businessName => this._businessName;
     public string rawName => this._rawName;
+    public string typeRaw => this._typeRaw;
+    public  string typeProduct => this._typeProduct;
 
     public Sprite rawSpriteImage => this._rawSpriteImage;
     public Sprite businessSprite => this._businessSprite;

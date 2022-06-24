@@ -12,6 +12,8 @@ public class RailRoadScript : MonoBehaviour
     public int trainsCountOnRail;
     public int trainsCountOnRailMax;
     private Transform[] childCollider;
+    public List<Transform> point;
+    public List<TownRawScript> townraw; // 0 - start   1 - finish
 
     public string path;
     public float price;
@@ -35,7 +37,9 @@ public class RailRoadScript : MonoBehaviour
                             }
                             if (_hit.collider.gameObject.transform.parent.name != this.gameObject.name)
                             {
+                                Debug.Log('1');
                                 CloseSelect();
+
                             }
                         }
                     }
@@ -54,7 +58,8 @@ public class RailRoadScript : MonoBehaviour
     }
     public void RoadSelect()
     {
-        Debug.Log("RoadSelect");
+        if (rsScript.roadSelected != null)
+            rsScript.roadSelected.CloseSelect();
         isRailSelected = true;
         rsScript.roadSelected = this;
         gameObject.GetComponent<MeshRenderer>().material = mat[2];
@@ -66,7 +71,6 @@ public class RailRoadScript : MonoBehaviour
     }
     public void CloseSelect()
     {
-        Debug.Log("CloseSelect");
         int matNub;
         if (isRailBuild == true)
             matNub = 0;
@@ -74,6 +78,7 @@ public class RailRoadScript : MonoBehaviour
             matNub = 1;
         isRailSelected = false;
         gameObject.GetComponent<MeshRenderer>().material = mat[matNub];
-        rsScript.CheckIsAnySelected();
+        rsScript.roadSelected = null;
+        rsScript.uiScript.buyRail.SetActive(false);
     }
 }

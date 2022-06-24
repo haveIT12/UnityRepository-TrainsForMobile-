@@ -13,9 +13,15 @@ public class TrainInfo : ScriptableObject
     private Sprite _spriteTrain;
     [SerializeField]
     private float _priceTrain;
+    [SerializeField]
+    private float _maxHealth;
+    [SerializeField]
+    private string _typeTrain;
 
     public string trainName => this._trainName;
     public Sprite spriteTrain => this._spriteTrain;
     public float maxSpeed => this._maxSpeed;
     public float priceTrain => this._priceTrain;
+    public float maxHealth => this._maxHealth;
+    public string typeTrain => this._typeTrain;
 }

@@ -10,18 +10,20 @@ public class UserInterfaceScript : MonoBehaviour
     public TownRawScript townRawScript;
     public RailRoadSystemScript rsScript;
     public TrainSystemScript tsScript;
-    public int idMenu; // 1-Depot; 2-TrainShop; 3-TrainMenu; 4-TownRaw;
+    public int idMenu; // 1-Depot; 2-TrainShop; 3-TrainMenu; 4-TownRaw; 999-Null;
     [Header("MainUI")]
     public GameObject canvasMainUI;
     public GameObject btnBuildRail;
     public TextMeshProUGUI moneyui;
     public TextMeshProUGUI ticketsui;
+    public GameObject canvasPointer;
     [Space]
     [Header("BGFB")]
     public GameObject canvasBgFB;
     public TextMeshProUGUI bgfbmoney;
     public TextMeshProUGUI bgfbtickets;
     public TextMeshProUGUI bgfgname;
+    public GameObject[] bgPos;
     [Space]
     [Header("TownUI")]
     public GameObject canvasTown;
@@ -34,6 +36,8 @@ public class UserInterfaceScript : MonoBehaviour
     public TextMeshProUGUI productCountText;
     public TextMeshProUGUI rawCountText;
     public TextMeshProUGUI upgradeCostText;
+    public int tr;
+    public float bottomsize;
 
     public Image publicBussinessSprite;
     public Image publicRawSprite;
@@ -63,7 +67,17 @@ public class UserInterfaceScript : MonoBehaviour
     public GameObject canvasBuildRail;
     public GameObject cancelBuild;
     public GameObject buyRail;
-    public Text priceRoadText;
+    public TextMeshProUGUI priceRoadText;
+    [Space]
+    [Header("SelectWay")]
+    public GameObject canvasSelectWay;
+    public GameObject panelSelectWay;
+    public Button goSelectWay;
+    public TextMeshProUGUI tipTextSelectWay;
+    public TextMeshProUGUI firstCityNameSelectWay;
+    public TextMeshProUGUI secondCityNameSelectWay;
+    public Image firstCityImageSelectWay;
+    public Image secondCityImageSelectWay;
     [Space]
     [Header("Depot")]
     public GameObject canvasDepot;
@@ -71,20 +85,55 @@ public class UserInterfaceScript : MonoBehaviour
     public TextMeshProUGUI nameTrainDepot;
     public TextMeshProUGUI speedTrainDepot;
     public Button selectTrainDepot;
-    public Image firstWagonDepot;
-    public Image secondWagonDepot;
-    public Image thirdWagonDepot;
-    public Image fourthWagonDepot;
-    public GameObject[] trainListDepot;
+    public Image[] wagonDepot;
+    public List<GameObject> trainListDepot;
+    public RectTransform contentDepot;
     [Space]
     [Header("TrainShop")]
     public GameObject canvasTrainShop;
     public TextMeshProUGUI[] priceTrain;
     public GameObject[] maskTrainShop;
+    public GameObject[] buttonBuy;
+    [Space]
+    [Header("TrainMenu")]
+    public GameObject canvasTrainMenu;
+    public TextMeshProUGUI nameTrainTrainMenu;
+    public TextMeshProUGUI speedTrainTrainMenu;
+    public Image imageTrainTrainMenu;
+    public Image imageHealthTrainMenu;
+    public Button btnRepairTrainMenu;
+    public Button btnSellTrainMenu;
+    public Button upgradeTrainTrainMenu;
+    public GameObject[] upgradesTrainTrainMenu;
+    public TextMeshProUGUI healthTrainTrainMenu;
+    public TextMeshProUGUI maxHealthTrainTrainMenu;
+    public TextMeshProUGUI typeTrainTrainMenu;
+    public TextMeshProUGUI upgradeTrainCostTrainMenu;
+    public Image[] wagonTrainMenu;
+    public Button[] buyWagonTrainMenu;
+    [Header("RepairMenu")]
+    public GameObject canvasRepairTrain;
+    public Image firstHealthImageRepairTrain;
+    public TextMeshProUGUI currentHealthRepairTrain;
+    public TextMeshProUGUI firstMaxHealthRepairTrain;
+    public TextMeshProUGUI secondMaxHealthRepairTrain;
+    public TextMeshProUGUI afterHealthRepairTrain;
+    public TextMeshProUGUI repairCostText;
+    public Button repairButtonRepairTrain;
+    [Header("WagonBuyMenu")]
+    public WagonScript[] wagon;
+    public GameObject canvasWagonBuy;
+    public Button[] wagonButtonBuy;
+    public TextMeshProUGUI[] priceBuyWagon;
 
+    private void Awake()
+    {
+        idMenu = 999;
+        InitializeCanvases();
+    }
     void Update()
     {
-        if(canvasBgFB.activeSelf)
+        if (canvasBgFB.activeSelf)
             UpdateBGFB();
         else
         {
@@ -111,6 +160,45 @@ public class UserInterfaceScript : MonoBehaviour
                     buyRail.GetComponent<Button>().interactable = false;
             }
         }
+        else if (mainScript.isTrainMenuOpen == true)
+        {
+            //CheckTrainMenuUpgradeCost();
+        }
+    }
+    public void OpenRepairTrain()
+    {
+        canvasRepairTrain.SetActive(true);
+        if (mainScript.pData.money <= tsScript.tScript.repairCost)
+            repairButtonRepairTrain.interactable = false;
+        else
+            repairButtonRepairTrain.interactable = true;
+        repairCostText.text = FormatNumsHelper.FormatNum(tsScript.tScript.repairCost);
+        firstHealthImageRepairTrain.color = tsScript.tScript.colorHealth;
+        currentHealthRepairTrain.color = tsScript.tScript.colorHealth;
+        currentHealthRepairTrain.text = tsScript.tScript.health.ToString();
+        firstMaxHealthRepairTrain.text = tsScript.tScript.maxHealth.ToString();
+        secondMaxHealthRepairTrain.text = tsScript.tScript.maxHealth.ToString();
+        afterHealthRepairTrain.text = tsScript.tScript.maxHealth.ToString();
+    }
+    public void OpenWagonBuyMenu()
+    {
+        canvasWagonBuy.SetActive(true);
+        for (int i = 0; i < tsScript.wagonPref.Length; i++)
+        {
+            if (mainScript.pData.money >= tsScript.wagonPref[i].price)
+                wagonButtonBuy[i].interactable = true;
+            else
+                wagonButtonBuy[i].interactable = false;
+            priceBuyWagon[i].text = FormatNumsHelper.FormatNum(tsScript.wagonPref[i].price);
+        }
+    }
+    public void CloseWagonBuyMenu()
+    {
+        canvasWagonBuy.SetActive(false);
+    }
+    public void CloseRepairTrain()
+    {
+        canvasRepairTrain.SetActive(false);
     }
     public void UpdateBGFB()
     {
@@ -118,65 +206,124 @@ public class UserInterfaceScript : MonoBehaviour
         bgfbtickets.text = FormatNumsHelper.FormatNum(mainScript.pData.tickets);
     }
     public void OpenTrainShop()
-    { 
-    
+    {
+        CheckUnlockedTrains();
+        CloseMenu();
+        canvasPointer.SetActive(false);
+        canvasMainUI.SetActive(false);
+        idMenu = 2;
+        canvasTrainShop.SetActive(true);
+        bgfgname.text = "Train Shop";
+        canvasBgFB.SetActive(true);
+        mainScript.isTrainShopOpen = true;
+        StartCoroutine("UpdateInfoTrainShop");
+        mainScript.camRig.GetComponent<CameraController>().enabled = false;
     }
     public void OpenDepot()
     {
-        if (tsScript.tScript != null)
+        canvasPointer.SetActive(false);
+        tsScript.CloseElementDepot();
+        if (mainScript.isTownRawInfoOpened == true)
+        {
+            mainScript.townRawScript.CloseTownRawInfo();
+        }
+        canvasMainUI.SetActive(false);
+        idMenu = 1;
+        canvasDepot.SetActive(true);
+        bgfgname.text = "Depot";
+        canvasBgFB.SetActive(true);
+        mainScript.isDepotOpen = true;
+        mainScript.camRig.GetComponent<CameraController>().enabled = false;
+        contentDepot.offsetMax = new Vector2(0, 0);
+        contentDepot.offsetMin = new Vector2(0, -tsScript.bottomsize);
+        /*if (tsScript.tScript != null)
         {
             trainDepotImage.gameObject.SetActive(true);
             nameTrainDepot.gameObject.SetActive(true);
             speedTrainDepot.gameObject.SetActive(true);
             //selectTrainDepot
-            firstWagonDepot.gameObject.SetActive(true);
-            secondWagonDepot.gameObject.SetActive(true);
-            thirdWagonDepot.gameObject.SetActive(true);
-            fourthWagonDepot.gameObject.SetActive(true);
+            wagonDepot[0].gameObject.SetActive(true);
+            wagonDepot[1].gameObject.SetActive(true);
+            wagonDepot[2].gameObject.SetActive(true);
+            wagonDepot[3].gameObject.SetActive(true);
 
             trainDepotImage.sprite = tsScript.tScript.trainSprite;
             nameTrainDepot.text = tsScript.tScript.trainName;
             speedTrainDepot.text = tsScript.tScript.maxSpeed.ToString();
             //selectTrainDepot
-            firstWagonDepot.sprite = tsScript.tScript.firstWagonDepot;
-            secondWagonDepot.sprite = tsScript.tScript.secondWagonDepot;
-            thirdWagonDepot.sprite = tsScript.tScript.thirdWagonDepot;
-            fourthWagonDepot.sprite = tsScript.tScript.fourthWagonDepot;
+            wagonDepot[0].sprite = tsScript.tScript.wagons[0];
+            wagonDepot[1].sprite = tsScript.tScript.wagons[1];
+            wagonDepot[2].sprite = tsScript.tScript.wagons[2];
+            wagonDepot[3].sprite = tsScript.tScript.wagons[3];
             //trainListDepot
         }
         else
-        {
-            selectTrainDepot.interactable = false;
-            trainDepotImage.gameObject.SetActive(false);
-            nameTrainDepot.gameObject.SetActive(false);
-            speedTrainDepot.gameObject.SetActive(false);
-            //selectTrainDepot
-            firstWagonDepot.gameObject.SetActive(false);
-            secondWagonDepot.gameObject.SetActive(false);
-            thirdWagonDepot.gameObject.SetActive(false);
-            fourthWagonDepot.gameObject.SetActive(false);
-            //trainListDepot
-        }
-        if (trainListDepot.Length == 0)
-        { 
-            
-        }
-        
+        {*/
+        selectTrainDepot.interactable = false;
+        trainDepotImage.gameObject.SetActive(false);
+        nameTrainDepot.gameObject.SetActive(false);
+        speedTrainDepot.gameObject.SetActive(false);
+        //selectTrainDepot
+        wagonDepot[0].gameObject.SetActive(false);
+        wagonDepot[1].gameObject.SetActive(false);
+        wagonDepot[2].gameObject.SetActive(false);
+        wagonDepot[3].gameObject.SetActive(false);
+        //trainListDepot
+        //}
+
     }
     public void UpdateInfoDepot()
     {
 
     }
-    public void UpdateInfoTrainShop()
+    public IEnumerator UpdateInfoTrainShop()
     {
-
+        if (mainScript.isTrainShopOpen == true)
+        {
+            CheckUnlockedTrains();
+            yield return new WaitForSeconds(1f);
+            StartCoroutine("UpdateInfoTrainShop");
+        }
+    }
+    /*public void CheckTrainMenuUpgradeCost()
+    {
+        if (mainScript.pData.money <= tsScript.tScript.tInfo.priceTrain)
+        {
+            upgradeTrainTrainMenu.interactable = false;
+        }
+    }*/
+    public void OpenTrainMenu(TrainScript tScript)
+    {
+        canvasBgFB.SetActive(false);
+        canvasDepot.SetActive(false);
+        canvasPointer.SetActive(false);
+        mainScript.isDepotOpen = false;
+        contentDepot.offsetMax = new Vector2(0, 0);
+        tsScript.CloseElementDepot();
+        idMenu = 3;
+        bgfgname.text = "Train Menu";
+        canvasBgFB.SetActive(true);
+        mainScript.isTrainMenuOpen = true;
+        canvasTrainMenu.SetActive(true);
+        tScript.StartCoroutine(tScript.checkHP());
+        nameTrainTrainMenu.text = tScript.trainName + tScript.subNameTrain;
+        speedTrainTrainMenu.text = tScript.maxSpeed.ToString() + " KM/H";
+        healthTrainTrainMenu.text = tScript.health.ToString();
+        maxHealthTrainTrainMenu.text = tScript.maxHealth.ToString();
+        imageHealthTrainMenu.color = tScript.colorHealth;
+        typeTrainTrainMenu.text = tScript.typeTrain;
+        typeTrainTrainMenu.color = tScript.colorTypeTrain;
+        upgradeTrainCostTrainMenu.text = FormatNumsHelper.FormatNum(tScript.tInfo.priceTrain);
+        mainScript.camRig.GetComponent<CameraController>().enabled = false;
     }
     public void UpdateInfoTown()
-    {
+    {//townRawScript.productCount
         productCountText.text = FormatNumsHelper.FormatNum(townRawScript.productCount);
         rawCountText.text = FormatNumsHelper.FormatNum(townRawScript.rawCount);
+
         productFullBar.fillAmount = mainScript.townRawScript.productCount / mainScript.townRawScript.maxStorageProduct;
         rawFullBar.fillAmount = mainScript.townRawScript.rawCount / mainScript.townRawScript.maxStorageRaw;
+
         rawToProductFullBar.fillAmount = townRawScript.timeCurrent / townRawScript.timeForProduct;
         if (townRawScript.upgradeLvl > 3)
         {
@@ -197,11 +344,13 @@ public class UserInterfaceScript : MonoBehaviour
     public void UpdateInfoRaw()
     {
         rawCountFirstText.text = FormatNumsHelper.FormatNum(townRawScript.rawCount);
-        rawFullBarFirst.fillAmount = townRawScript.rawCount / townRawScript.maxStorageRaw;
+
         rawFullBarZero.fillAmount = townRawScript.timeCurrent / townRawScript.timeForProduct;
+        rawFullBarFirst.fillAmount = mainScript.townRawScript.rawCount / mainScript.townRawScript.maxStorageRaw;
     }
     public void OpenTownRaw()
     {
+        canvasPointer.SetActive(false);
         if (townRawScript.isTown == true)
         {
             canvasTown.SetActive(true);
@@ -238,6 +387,7 @@ public class UserInterfaceScript : MonoBehaviour
         }
         else
         {
+            bgPos[0].transform.position = bgPos[2].transform.position;
             canvasRaw.SetActive(true);
             townRawScript.rawCount.ToString();
             nameText.text = townRawScript.townName;
@@ -250,13 +400,20 @@ public class UserInterfaceScript : MonoBehaviour
     }
     public void CheckUnlockedTrains()
     {
-        Debug.Log("CheckUnlockedTrains");
         for (int i = 0; i < mainScript.pData.trainUnlocked.Length; i++)
         {
             if (mainScript.pData.trainUnlocked[i] == true)
             {
                 maskTrainShop[i].SetActive(false);
                 priceTrain[i].text = FormatNumsHelper.FormatNum(tsScript.tInfo[i].priceTrain) + "$";
+                if (tsScript.tInfo[i].priceTrain > mainScript.pData.money)
+                {
+                    buttonBuy[i].GetComponent<Button>().interactable = false;
+                }
+                else
+                {
+                    buttonBuy[i].GetComponent<Button>().interactable = true;
+                }
             }
             else
             {
@@ -267,7 +424,6 @@ public class UserInterfaceScript : MonoBehaviour
     }
     public void CloseMenu()
     {
-        Debug.Log("closemenu");
         switch (idMenu)
         {
             case 1:
@@ -275,6 +431,8 @@ public class UserInterfaceScript : MonoBehaviour
                     canvasBgFB.SetActive(false);
                     canvasDepot.SetActive(false);
                     mainScript.isDepotOpen = false;
+                    contentDepot.offsetMax = new Vector2(0, 0);
+                    tsScript.CloseElementDepot();
                     break;
                 }
             case 2:
@@ -282,6 +440,15 @@ public class UserInterfaceScript : MonoBehaviour
                     canvasBgFB.SetActive(false);
                     canvasTrainShop.SetActive(false);
                     mainScript.isTrainShopOpen = false;
+                    StopCoroutine("UpdateInfoTrainShop");
+                    break;
+                }
+            case 3:
+                {
+                    canvasBgFB.SetActive(false);
+                    canvasTrainMenu.SetActive(false);
+                    mainScript.isTrainMenuOpen = false;
+                    tsScript.tScript.StopCoroutine(tsScript.tScript.checkHP());
                     break;
                 }
             case 4:
@@ -292,10 +459,43 @@ public class UserInterfaceScript : MonoBehaviour
                         canvasTown.SetActive(false);
                     else
                         canvasRaw.SetActive(false);
+                    bgPos[0].transform.position = bgPos[1].transform.position;
                     break;
                 }
         }
+        idMenu = 999;
         mainScript.camRig.GetComponent<CameraController>().enabled = true;
+        canvasPointer.SetActive(true);
         canvasMainUI.SetActive(true);
+    }
+    public void InitializeCanvases()
+    {
+        canvasBgFB.SetActive(true);
+        canvasBgFB.SetActive(false);
+        //Debug.Log("Canvas BgFb initialized");
+
+        canvasDepot.SetActive(true);
+        canvasDepot.SetActive(false);
+        //Debug.Log("Canvas Depot initialized");
+
+        canvasTrainShop.SetActive(true);
+        canvasTrainShop.SetActive(false);
+        //Debug.Log("Canvas TrainShop initialized");
+
+        canvasRaw.SetActive(true);
+        canvasRaw.SetActive(false);
+        //Debug.Log("Canvas Raw initialized");
+
+        canvasTown.SetActive(true);
+        canvasTown.SetActive(false);
+        //Debug.Log("Canvas Town initialized");
+
+        canvasBuildRail.SetActive(true);
+        canvasBuildRail.SetActive(false);
+        //Debug.Log("Canvas BuildRail initialized");
+
+        canvasTrainMenu.SetActive(true);
+        canvasTrainMenu.SetActive(false);
+        //Debug.Log("Canvas TrainMenu initialized");
     }
 }
