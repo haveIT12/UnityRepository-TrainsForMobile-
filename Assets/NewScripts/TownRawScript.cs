@@ -104,30 +104,24 @@ public class TownRawScript : MonoBehaviour
     private void Update()
     {
         if (isCityUnblock == true)
-        { 
-            if (changeCount == true)
+        {
+            if (isTown == true)
             {
-                if (isTown == true)
-                {
-                    productCount = Mathf.Lerp(productCount, newProduct, Time.deltaTime * 5f);
-                    rawCount = Mathf.Lerp(rawCount, newRaw, Time.deltaTime * 5f);
-                    if (rawCount - newRaw <= 0.4)
-                    {
-                        productCount = Mathf.Round(productCount);
-                        rawCount = Mathf.Round(rawCount);
-                        changeCount = false;
-                    }
-                }
-                else
-                {
-                    rawCount = Mathf.Lerp(rawCount, newRaw, Time.deltaTime * 5f);
-                    if (newRaw - rawCount <= 0.4)
-                    {
-                        rawCount = Mathf.Round(rawCount);
-                        changeCount = false;
-                    }
-                }
+                rawCount = Mathf.Lerp(rawCount, newRaw, Time.deltaTime * 5f);
+                if (rawCount - newRaw < 0.5)
+                    rawCount = newRaw;
+                productCount = Mathf.Lerp(productCount, newProduct, Time.deltaTime * 5f);
+                if (newProduct - productCount < 0.5)
+                    productCount = newProduct;
+
             }
+            else
+            { 
+                rawCount = Mathf.Lerp(rawCount, newRaw, Time.deltaTime * 2f);
+                if (newRaw - rawCount < 0.5)
+                    rawCount = newRaw;
+            }
+
             if (isProductReady == true)
             {
                 timeCurrent += Time.deltaTime;
@@ -135,15 +129,15 @@ public class TownRawScript : MonoBehaviour
                 {
                     if (isTown == true)
                     {
-                        StartCoroutine(ChangeProduct(+productFromRaw));
-                        StartCoroutine(ChangeRaw(-rawToProduct));
+                        ChangeProduct(+productFromRaw);
+                        ChangeRaw(-rawToProduct);
                         isProductReady = false;
                         timeCurrent = 0;
                         CheckProductReady();
                     }
                     else
                     {
-                        StartCoroutine(ChangeRaw(rawToProduct));
+                        ChangeRaw(rawToProduct);
                         isProductReady = false;
                         timeCurrent = 0;
                         CheckProductReady();
@@ -203,7 +197,7 @@ public class TownRawScript : MonoBehaviour
                 Debug.Log("Your Lvl is Max");
         }
     }
-    private void CheckProductReady()
+    public void CheckProductReady()
     {
         if (isCityUnblock == true)
         { 
@@ -248,17 +242,13 @@ public class TownRawScript : MonoBehaviour
             }
         }
     }
-    private IEnumerator ChangeProduct(float value)
+    public void ChangeProduct(float value)
     {
-        changeCount = true;
         newProduct += value;
-        yield return new WaitForSeconds(1f);
     }
-    private IEnumerator ChangeRaw(float value)
+    public void ChangeRaw(float value)
     {
-        changeCount = true;
         newRaw += value;
-        yield return new WaitForSeconds(1f);
     }
     private IEnumerator Msg(string msg)
     {

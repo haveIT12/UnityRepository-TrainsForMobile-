@@ -1,5 +1,35 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &968687929009758
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4620503273661144625}
+  m_Layer: 0
+  m_Name: Touch
+  m_TagString: Untagged
+  m_Icon: {fileID: 7422848464349959988, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4620503273661144625
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 968687929009758}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0.982}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1871787960417666133}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &928333192647890638
 GameObject:
   m_ObjectHideFlags: 0
@@ -67,6 +97,8 @@ Transform:
   - {fileID: 6063899698550836762}
   - {fileID: 7619878921825546847}
   - {fileID: 6434904662364438055}
+  - {fileID: 4620503273661144625}
+  - {fileID: 5858281157776118804}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
@@ -86,6 +118,8 @@ MonoBehaviour:
   uiScript: {fileID: 0}
   tInfo: {fileID: 11400000, guid: 11c5cfb3060f49541b0a8bcefd9d2133, type: 2}
   tPointer: {fileID: 1727271631543445742}
+  touchPlace: {fileID: 968687929009758}
+  dir: {fileID: 2946867721896058729}
   wagon: []
   placeForWagon:
   - {fileID: 928333192647890638}
@@ -105,19 +139,24 @@ MonoBehaviour:
   colorTypeTrain: {r: 0, g: 0, b: 0, a: 0}
   way: []
   placeWhereIAm: {fileID: 0}
+  placeWhereIAmGoing: {fileID: 0}
   road: {fileID: 0}
+  target: 0
   canILoad: 0
+  canIMove: 0
+  directionMovement: 
   trainSprite: {fileID: 0}
   wagonSprite:
   - {fileID: -3617075397123785351, guid: d4e4340c52dd71643aa6db988274018c, type: 3}
   - {fileID: 8286904422784633498, guid: d4e4340c52dd71643aa6db988274018c, type: 3}
   - {fileID: -3617075397123785351, guid: d4e4340c52dd71643aa6db988274018c, type: 3}
   - {fileID: 7969812626028731672, guid: d4e4340c52dd71643aa6db988274018c, type: 3}
-  pref: {fileID: 0}
+  pref: {fileID: 628192327707520867, guid: d956c913d2803014aba49cefac60a3f5, type: 3}
   healthText: {fileID: 0}
   maxHealthText: {fileID: 0}
   trainNameText: {fileID: 0}
   canvasTrainMenu: {fileID: 0}
+  asdsad: 0
 --- !u!33 &3338916298410380272
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -247,6 +286,36 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1871787960417666133}
   m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2946867721896058729
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5858281157776118804}
+  m_Layer: 0
+  m_Name: Dir
+  m_TagString: Untagged
+  m_Icon: {fileID: 7422848464349959988, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5858281157776118804
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2946867721896058729}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0.577}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1871787960417666133}
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3265360658949954697
 GameObject:
