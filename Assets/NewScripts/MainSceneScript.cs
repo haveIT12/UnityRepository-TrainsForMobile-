@@ -13,6 +13,7 @@ public class MainSceneScript : MonoBehaviour
     public Camera cam;
     public CameraController camController;
     public GameObject camRig;
+    public PointerManager pManager;
     public List<TownRawScript> trScript;
     public List<TownRawScript> allTowns;
 
@@ -64,7 +65,8 @@ public class MainSceneScript : MonoBehaviour
             yield return null;
         }
         camController.newPosition = gotopos;
-        camController.newZoom = zoom;
+        if(isZoom == true)
+            camController.newZoom = zoom;
         yield return null;
     }
 }

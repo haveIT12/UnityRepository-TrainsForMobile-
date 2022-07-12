@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class TrainScript : MonoBehaviour
@@ -9,15 +10,23 @@ public class TrainScript : MonoBehaviour
     public TrainSystemScript tsScript;
     public UserInterfaceScript uiScript;
     public TrainInfo tInfo;
+    public ShowCargoInfo scInfo;
     public TargetPointer tPointer;
+    public GameObject canvas;
+    private string lastmsg;
     [Space]
     [Header("Wagons")]
     public GameObject touchPlace;
     public GameObject dir;
     public List<WagonScript> wagon;
+    public List<WagonScript> wagonsLoad;
     public GameObject[] placeForWagon;
+    public float totalCargoPrice;
+    public float wagonsLoadingSpeed;
+    public bool isWagonsLoad;
+    public bool isWagonsUnload;
     [Space]
-    [Header("Other")]
+    [Header("Settings Train")]
     public string trainName;
     public float maxSpeed;
     public float speed;
@@ -26,9 +35,24 @@ public class TrainScript : MonoBehaviour
     public string typeTrain;
     public string subNameTrain;
     public float repairCost;
-    public bool sell;
-    //public bool[] wagon;
+    public float priceTrain;
+    public float newRepair;
+    public Color newRepairColor;
+    public float chanceBroke;
+    private bool iBroke;
+    public float breakSpeed;
+    private IEnumerator lerpcoroutine;
+    public float sellPrice;
+    public float sellExtraPrice;
+    [Space]
+    [Header("Upgrade")]
+    public TrainUpgradeInfo[] tUpgrade;
+    public int upgradeLvl;
+    public bool isUpgradeTicket;
+    public float wagonSizeRatio;
+    [Space]
     public bool isTrainSelectDepot;
+
     public Color colorHealth;
     public Color colorTypeTrain;
     [Space]
@@ -37,27 +61,32 @@ public class TrainScript : MonoBehaviour
     public TownRawScript placeWhereIAm;
     public TownRawScript placeWhereIAmGoing;
     public RailRoadScript road;
-    public int target;
-    public bool canILoad;
+    private int target;
     public bool canIMove;
-    public string directionMovement;
-    public Quaternion lookOnLook;
+    public bool displace;
+    private Vector3 displacePosition;
+    private float elapsedTime;
+    private float timer = 25f;
+    
+    private string directionMovement;
+    private Quaternion lookOnLook;
     [Space]
     [Header("UI")]
     public Sprite trainSprite;
     public Sprite[] wagonSprite;
 
     public GameObject pref;
+    public GameObject mask;
     public TextMeshProUGUI healthText;
     public TextMeshProUGUI maxHealthText;
     public TextMeshProUGUI trainNameText;
-    private GameObject mask;
     [Header("TrainMenu")]
     public GameObject canvasTrainMenu;
-    public float asdsad;
-
-    void Awake()
+    ////////////////////////////////---------[GENERAL]-------//////////////////////////////////////////
+    private void Awake()
     {
+        //scInfo = GetComponentInChildren<ShowCargoInfo>();
+        //canvas = gameObject.transform.GetChild(0).gameObject;
         tPointer = gameObject.GetComponent<TargetPointer>();
         tsScript = FindObjectOfType<TrainSystemScript>();
         uiScript = tsScript.uiScript;
@@ -67,183 +96,117 @@ public class TrainScript : MonoBehaviour
         maxHealth = tInfo.maxHealth;
         health = maxHealth;
         typeTrain = tInfo.typeTrain;
-    }
-    private void Start()
-    {
-        checktype();
-    }
-    private void FixedUpdate()
-    {
-        if (canIMove == true)
-        {
-            if (directionMovement == "Forward")
-            {
-                if (target <= road.point.Count)
-                {
-                    if (target == 0)
-                        speed = Mathf.Lerp(speed, maxSpeed, 2f * Time.fixedDeltaTime);
-                    if (target == 1)
-                        speed = maxSpeed;
-                    if (target == road.point.Count)
-                    {
-                        speed = Mathf.Lerp(speed, 1f, 0.2f * Time.fixedDeltaTime);
-                        if (Vector3.Distance(gameObject.transform.position, placeWhereIAmGoing.spawnPoint.transform.position) <= 0.3f)
-                        {
-                            canIMove = false;
-                            speed = 0;
-                            UnLoadWagons();
-                        }
-                    }
-                    gameObject.transform.position += transform.forward * (speed / 10) * Time.fixedDeltaTime;
-                    if (target < road.point.Count)
-                        lookOnLook = Quaternion.LookRotation(road.point[target].transform.position - gameObject.transform.position);
-                    gameObject.transform.rotation = Quaternion.Slerp(transform.rotation, lookOnLook, (speed / 3) * Time.fixedDeltaTime);
-                }
-            }
-            else if (directionMovement == "Backward")
-            {
-                if(target <= road.point.Count)
-                {
-                    if(target == road.point.Count)
-                        speed = Mathf.Lerp(speed, maxSpeed, 2f * Time.fixedDeltaTime);
-                    if(target == road.point.Count-1)
-                        speed = maxSpeed;
-                    if (target == -1)
-                    {
-                        speed = Mathf.Lerp(speed, 1f, 0.2f * Time.fixedDeltaTime);
-                        if (Vector3.Distance(gameObject.transform.position, placeWhereIAmGoing.spawnPoint.transform.position) <= 0.3f)
-                        {
-                            canIMove = false;
-                            speed = 0;
-                            UnLoadWagons();
-                        }
-                    }
-                    gameObject.transform.position += transform.forward * (speed / 10) * Time.fixedDeltaTime;
-                    if (target >= 0)
-                        lookOnLook = Quaternion.LookRotation(road.point[target].transform.position - gameObject.transform.position);
-                    gameObject.transform.rotation = Quaternion.Slerp(transform.rotation, lookOnLook, (speed / 3) * Time.fixedDeltaTime);
-                }
-            }
-        }
+        priceTrain = tInfo.priceTrain;
+        chanceBroke = tInfo.chanceBroke;
+        wagonsLoadingSpeed = tInfo.loadingSpeed;
+        CheckType();
     }
     private void Update()
     {
-        if (sell == true) //временно
-            SellTrain();
-    }
-    private void UnLoadWagons()
-    {
-        for (int i = 0; i < wagon.Count; i++)
+        if (displace == true)
         {
-            wagon[i].StartCoroutine(wagon[i].CheckUnload());
-        }
-    }
-    public void LoadWagons()
-    {
-        CheckPlace();
-        Spawn();
-        for (int i = 0; i < wagon.Count; i++)
-        {
-            wagon[i].gameObject.SetActive(true);
-            wagon[i].Spawn();
-            wagon[i].StartCoroutine(wagon[i].CheckLoad());
-        }
-    }
-    public bool IsWagonsUnLoaded()
-    {
-        for (int i = 0; i < wagon.Count; i++)
-        {
-            if (wagon[i].unLoaded == true)
+            elapsedTime += Time.deltaTime;
+            float perc = elapsedTime / timer;
+            gameObject.transform.position = Vector3.Lerp(gameObject.transform.position, displacePosition, Mathf.SmoothStep(0,1,perc));
+            if (Vector3.Distance(gameObject.transform.position, displacePosition) <= 0.01f)
             {
-                wagon[i].Hide();
+                elapsedTime = 0;
+                SpawnWagons();
+                displace = false;
+                gameObject.transform.position = displacePosition;
             }
-            else
-                return false;
-        }
-        LoadWagons();
-        return true;
+        } 
     }
-    public bool IsWagonsLoaded()
+    private void FixedUpdate()
     {
-        for (int i = 0; i < wagon.Count; i++)
+        if (canIMove == false || iBroke == true)
+            return;//Если движение запрещено, возвращаем метод
+        if (target <= road.point.Count)//Если меток меньше или равно количеству всех меток на пути
         {
-            if (wagon[i].loaded == true)
-            {
+            if (directionMovement == "Forward")//Если движение вперед
+            {                                                                
+                if (target == road.point.Count)//Если цель это последняя точки
+                {
+                    lookOnLook = Quaternion.LookRotation(placeWhereIAmGoing.spawnPoint.transform.position - gameObject.transform.position);
+                    if (Vector3.Distance(gameObject.transform.position, placeWhereIAmGoing.spawnPoint.transform.position) <= 0.05f)//Если мы близко к метке назначения
+                    {
+                        canIMove = false;//Запрещаем движение
+                        speed = 0;//Скорость = 0
+                        UnloadWagons();//Выгружаем вагоны
+                    }
+                }
+                if (target < road.point.Count)//Если метка меньше чем количество всех меток
+                    lookOnLook = Quaternion.LookRotation(road.point[target].transform.position - gameObject.transform.position); //поварачивем поезд
             }
-            else
-                return false;
+            else if (directionMovement == "Backward")//Если движение назад
+            {
+                if (target == -1)//Если цель это последняя метка
+                {
+                    lookOnLook = Quaternion.LookRotation(placeWhereIAmGoing.spawnPoint.transform.position - gameObject.transform.position);
+                    if (Vector3.Distance(gameObject.transform.position, placeWhereIAmGoing.spawnPoint.transform.position) <= 0.05f)//Если мы близко к метке назначения
+                    {
+                        canIMove = false;//Запрещаем движение
+                        speed = 0;//Скорость = 0
+                        UnloadWagons();//Выгружаем вагоны
+                    }
+
+                }
+                if (target >= 0)//Если метка больше чем 0
+                    lookOnLook = Quaternion.LookRotation(road.point[target].transform.position - gameObject.transform.position);//поварачивем поезд
+            }
+            gameObject.transform.position += transform.forward * (speed / 10) * Time.fixedDeltaTime;//Задаем движение вперед
+            gameObject.transform.rotation = Quaternion.Slerp(transform.rotation, lookOnLook, (speed / 3) * Time.fixedDeltaTime);//Плавный поворот поезда
         }
-        canILoad = false;
-        Move();
-        return true;
     }
     public void Spawn()
     {
-        if (placeWhereIAm == null)
+        if (placeWhereIAm == null)// Если мы только купили поезд
             placeWhereIAm = way[0];
+
+        canIMove = false;//Запрещаем движение
+        for (int i = 0; i < wagon.Count; i++)
+        {
+            wagon[i].spriteCargo = null;
+        }
+        //Спавним поезд в точке SpawnPoint города в котором поезд находится
         gameObject.transform.SetParent(placeWhereIAm.gameObject.transform);
         gameObject.transform.position = placeWhereIAm.spawnPoint.transform.position;
-        gameObject.transform.position += transform.forward * 0.65f * wagon.Count;
-        gameObject.transform.forward = placeWhereIAm.spawnPoint.transform.forward;
         gameObject.transform.SetParent(tsScript.gameObject.transform);
-        CheckDirection();
-        CheckPlace();
-        canILoad = true;
-        StartCoroutine(CheckWagons());
+        CheckPlace();//Узнать где поезд находится и куда будет ехать
+        CheckDirection();//Узнать в какую сторону нужно двигаться
+        StartCoroutine(CheckWagons()); //Проверяем есть ли вагоны
     }
-    public void CheckPlace()
+    ////////////////////////////////---------[MOVEMENT]-------//////////////////////////////////////////
+    private IEnumerator Displace()
+    {
+        if (wagonsLoad.Count != 0)
+            displacePosition = gameObject.transform.position + gameObject.transform.forward * wagonsLoad[0].bounds.size.z * wagonsLoad.Count;
+        else
+            displacePosition = gameObject.transform.position;
+        displace = true;
+        yield return null;
+    }
+    private void Move()
+    {
+        speed = 0;//Скорость = 0
+        for (int b = 0; b<wagon.Count; b++)
+        {
+            //wagon[b].GetWagonNumber();//Узнаем номер вагона в списке
+        }
+        canIMove = true;//Разрешаем движение
+        if(lerpcoroutine != null)
+            StopCoroutine(lerpcoroutine);
+        lerpcoroutine = LerpSpeed(0, maxSpeed, 3f);
+        StartCoroutine(lerpcoroutine);
+    }
+    private void CheckPlace()
     {
         for (int i = 0; i < road.townraw.Count; i++)
         {
             if (road.townraw[i] != placeWhereIAm)
             {
                 placeWhereIAmGoing = road.townraw[i];
-            }
-        }
-        if (placeWhereIAmGoing == road.townraw[0])
-        {
-            target = road.point.Count - 1;
-            directionMovement = "Backward";
-        }
-        else if (placeWhereIAmGoing == road.townraw[1])
-        {
-            target = 0;
-            directionMovement = "Forward";
-        }
-    }
-    public void Move()
-    {
-        speed = 0;
-        for (int b = 0; b < wagon.Count; b++)
-        {
-            wagon[b].GetWagonNumber();
-        }
-        //gameObject.transform.position = placeWhereIAm.spawnPoint.transform.position;
-        gameObject.transform.forward = placeWhereIAm.spawnPoint.transform.forward;
-        canIMove = true;
-        //placeWhereIAm = null;
-    }
-    private IEnumerator CheckWagons()
-    {
-        if (canILoad == true)
-        {
-            if (wagon.Count > 0)
-                tPointer.Hide();
-            else
-            {
-                if (uiScript.mainScript.isTownRawInfoOpened == false)
-                {
-                    if (uiScript.mainScript.isSelectWayOpen == false)
-                    {
-                        if (uiScript.idMenu == 999)
-                        {
-                            tPointer.Hide();
-                            tPointer.Spawn(gameObject, "NoWagons");
-                        }
-                    }
-                }
-                yield return new WaitForSeconds(2f);
-                StartCoroutine(CheckWagons());
+                placeWhereIAmGoing.trains.Add(this);
             }
         }
     }
@@ -255,29 +218,485 @@ public class TrainScript : MonoBehaviour
             gameObject.transform.forward = placeWhereIAm.directionPoint[0].transform.forward;
         else
             gameObject.transform.forward = placeWhereIAm.directionPoint[1].transform.forward;
+
+        if (placeWhereIAmGoing == road.townraw[0])//road.townraw[0] это всегда то место откуда начинаются метки на пути
+        {
+            target = road.point.Count - 1;//назначаем начальную метку движения
+            directionMovement = "Backward";//назначаем куда будет двигаться поезд относительно меткам
+        }
+        else if (placeWhereIAmGoing == road.townraw[1])//road.townraw[1] это всегда то место где заканчиваются метки на пути
+        {
+            target = 0;//назначаем начальную метку движения
+            directionMovement = "Forward";//назначаем куда будет двигаться поезд относительно меткам
+        }
     }
-    public void checktype()
+    private IEnumerator LerpSpeed(float currentSpeed, float afterSpeed, float time)
     {
-        if (typeTrain == "Universal")
+        float elapsedTime = 0;
+        while (elapsedTime < time)
         {
-            colorTypeTrain = tsScript.colorTypeTrain[0];
-            subNameTrain = "niversal";
+            speed = Mathf.Lerp(currentSpeed, afterSpeed, (elapsedTime / time));
+            elapsedTime += Time.deltaTime;
+            yield return null;
         }
-
-        else if (typeTrain == "Freight Only!")
-        {
-            colorTypeTrain = tsScript.colorTypeTrain[1];
-            subNameTrain = "reight";
-        }
-
-        else if (typeTrain == "Pass Only!")
-        {
-            colorTypeTrain = tsScript.colorTypeTrain[2];
-            subNameTrain = "assenger";
-        }
-
+        yield return null;
     }
-    public void checkhp(float health)
+    ////////////////////////////////---------[WAGONS]-------//////////////////////////////////////////
+    private IEnumerator CheckWagons()
+    {
+        if (canIMove == false)//Если движение запрещено, тоесть поезд стоит на станции
+        {
+            if (wagon.Count > 0)// Если вагонов больше чем 0
+            {
+                tPointer.Hide();//Прячем индикатор
+                lastmsg = null;
+                LoadWagons();
+                yield return null;
+            }
+            else
+            {
+                if (uiScript.mainScript.isTownRawInfoOpened == false)//Если информация о городе закрыта
+                {
+                    if (uiScript.mainScript.isSelectWayOpen == false)//Если выбор маршута закрыт
+                    {
+                        if (uiScript.idMenu == 999)//Если ид меню = 999, тоесть все меню закрыты
+                        {
+                            if (tPointer.PointerUI == null)
+                                Msg("NoWagons");
+                        }
+                    }
+                }
+                yield return new WaitForSeconds(2f);//Ждём 2 секунды
+                StartCoroutine(CheckWagons());//Вызываем корутину опять
+            }
+        }
+    }
+    public void BuyWagon(int typeWagon)
+    {
+        if (wagon.Count == 0)//Если вагонов было = 0
+            tPointer.Hide();//Выключаем индикатор
+        var Wagon = Instantiate(tsScript.wagonPref[typeWagon], gameObject.transform);//Создаем вагон
+        Wagon.train = this;//Даем вагону знать кто такой train
+        wagon.Add(Wagon.GetComponent<WagonScript>());//Добавляем вагон в список вагонов
+        Wagon.GetWagonNumber();
+        uiScript.buyWagonTrainMenu[Wagon.wagonNum].gameObject.SetActive(false);
+        uiScript.wagonTrainMenu[Wagon.wagonNum].gameObject.SetActive(true);
+        uiScript.wagonCargoSprite[Wagon.wagonNum].sprite = Wagon.emptySpriteCargo;
+        if (typeWagon == 1)
+            uiScript.wagonCargoSprite[Wagon.wagonNum].sprite = Wagon.passengersSprite;
+        uiScript.wagonTrainMenu[Wagon.wagonNum].sprite = Wagon.wagonSprite;
+        Wagon.Hide();//Прячем вагон
+        Wagon = null;//Очищаем var
+    }
+    private void UnloadWagons()
+    {
+        speed = 0;
+        if (wagonsLoad.Count != 0)
+        {
+            for (int i = 0; i < wagonsLoad.Count; i++)
+            {
+                wagonsLoad[i].Unload();
+            }
+        }
+        else
+            IsWagonsUnload();
+    }
+    private void LoadWagons()
+    {
+        float prodraw;//placeWhereIAm.newRaw or placeWhereIAm.newProduct
+        float prodraw2;//placeWhereIAmGoing.newRaw
+        float prodraw3 = placeWhereIAm.newPeople; ;//placeWhereIAm.newPeople;
+        float prodraw4 = placeWhereIAmGoing.newPeople; ;//placeWhereIAmGoing.newPeople;
+        if (placeWhereIAm.isTown)
+        {
+            prodraw = placeWhereIAm.newProduct;
+            prodraw2 = placeWhereIAmGoing.newRaw;
+            if (typeTrain != "Freight Only!")
+            {
+                if (placeWhereIAmGoing.isTown == false)
+                {
+                    for (int k = 0; k < placeWhereIAmGoing.trains.Count; k++)
+                    {
+                        for (int l = 0; l < placeWhereIAmGoing.trains[k].wagonsLoad.Count; l++)
+                        {
+                            if (placeWhereIAmGoing.trains[k].wagonsLoad[l].typeOfWagon == "Passenger")
+                                prodraw4 += placeWhereIAmGoing.trains[k].wagon[l].newLoadWeight;
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            prodraw = placeWhereIAm.newRaw;
+            prodraw2 = placeWhereIAmGoing.newRaw;
+            if(typeTrain != "Pass Only!")
+            {
+                if (placeWhereIAmGoing.isTown)
+                {
+                    for (int w = 0; w < placeWhereIAmGoing.trains.Count; w++)
+                    {
+                        for (int o = 0; o < placeWhereIAmGoing.trains[w].wagonsLoad.Count; o++)
+                        {
+                            if (placeWhereIAmGoing.trains[w].wagonsLoad[o].typeOfWeight == placeWhereIAmGoing.rawType)
+                                prodraw2 += placeWhereIAmGoing.trains[w].wagon[o].newLoadWeight;
+                        }
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < wagon.Count; i++)
+        {
+            wagon[i].CheckLoadWeight();
+            if (wagon[i].typeOfWagon == "Freight")//Freight
+            {
+                if (placeWhereIAmGoing.isTown == true)
+                {
+                    if (placeWhereIAm.isTown)
+                    {
+                        if (prodraw >= wagon[i].maxLoadWeight)
+                        {
+                            wagonsLoad.Add(wagon[i]);
+                            placeWhereIAm.newProduct -= wagon[i].maxLoadWeight;
+                            prodraw -= wagon[i].maxLoadWeight;
+                        }
+                    }
+                    else
+                    {
+                        if (prodraw >= wagon[i].maxLoadWeight)
+                        {
+                            prodraw2 += wagon[i].maxLoadWeight;
+                            if (prodraw2 <= placeWhereIAmGoing.maxStorageRaw)
+                            {
+                                prodraw -= wagon[i].maxLoadWeight;
+                                placeWhereIAm.newRaw -= wagon[i].maxLoadWeight;
+                                wagonsLoad.Add(wagon[i]);
+                            }
+                            else
+                                prodraw2 -= wagon[i].maxLoadWeight;      
+                        }
+                    }
+                }
+
+            }
+            else//Passenger
+            {
+                if (placeWhereIAm.isTown == true)
+                {
+                    if (prodraw3 >= wagon[i].maxLoadWeight)
+                    {
+                        if (placeWhereIAmGoing.isTown == false)
+                        {
+                            prodraw4 += wagon[i].maxLoadWeight;
+                            if (prodraw4 <= placeWhereIAmGoing.maxPeople)
+                            {
+                                wagonsLoad.Add(wagon[i]);
+                                placeWhereIAm.newPeople -= wagon[i].maxLoadWeight;
+                                prodraw3 -= wagon[i].maxLoadWeight;
+                            }
+                        }
+                        else
+                        {
+                            wagonsLoad.Add(wagon[i]);
+                            placeWhereIAm.newPeople -= wagon[i].maxLoadWeight;
+                            prodraw3 -= wagon[i].maxLoadWeight;
+                        }
+                    }
+                }
+            }
+        }
+            StartCoroutine(Displace());
+    }
+    private void SpawnWagons()
+    {
+        if (wagonsLoad.Count != 0)
+        {
+            for (int b = 0; b < wagonsLoad.Count; b++)
+            {
+                wagonsLoad[b].Spawn();
+                wagonsLoad[b].Load();
+            }
+        }
+        else
+            IsWagonsLoad();
+    }
+    public void IsWagonsLoad()
+    {
+        isWagonsLoad = true;
+        for (int i = 0; i < wagonsLoad.Count; i++)
+        {
+            if (wagonsLoad[i].isLoaded == false)
+                isWagonsLoad = false;
+        }
+        if (isWagonsLoad == true)
+            Move();
+    }
+    public void IsWagonsUnload()
+    {
+        isWagonsLoad = false;
+        isWagonsUnload = true;
+        for (int i = 0; i < wagonsLoad.Count; i++)
+        {
+            if (wagonsLoad[i].isUnloaded == false)
+                isWagonsUnload = false;
+        }
+        if (isWagonsUnload == true)
+        {
+            ShowPrice();
+            int c = wagonsLoad.Count;
+            for (int b = 0; b < c; b++)
+            {
+                wagonsLoad.Remove(wagonsLoad[0]);
+            }
+            placeWhereIAmGoing.trains.Remove(this);
+            totalCargoPrice = 0;
+            Spawn();
+        }
+    }
+    ////////////////////////////////---------[OTHER]-------//////////////////////////////////////////
+    public void Upgrade()
+    {
+
+        if (upgradeLvl <= 4)
+        {
+            if (tUpgrade[upgradeLvl].isTickets)
+            {
+                if (tsScript.mainScript.pData.newTickets < tUpgrade[upgradeLvl].upgradeCost)
+                {
+                    uiScript.upgradeTrain.interactable = false;
+                    uiScript.upgradeTrainPrice.text = FormatNumsHelper.FormatNum(tUpgrade[upgradeLvl].upgradeCost);
+                    return;
+                }
+                else
+                    tsScript.mainScript.pData.ChangeTickets(this.gameObject, -tUpgrade[upgradeLvl].upgradeCost);
+            }
+            else
+            {
+                if (tsScript.mainScript.pData.newMoney < tUpgrade[upgradeLvl].upgradeCost)
+                {
+                    uiScript.upgradeTrain.interactable = false;
+                    uiScript.upgradeTrainPrice.text = FormatNumsHelper.FormatNum(tUpgrade[upgradeLvl].upgradeCost);
+                    return;
+                }
+                else
+                    tsScript.mainScript.pData.ChangeMoney(this.gameObject, -tUpgrade[upgradeLvl].upgradeCost);
+            }
+            switch (upgradeLvl)
+            {
+                case 0:
+                    {
+                        maxSpeed = tUpgrade[0].upgradeCount;
+                        breakSpeed = tUpgrade[0].breakSpeed;
+                        uiScript.speedTrainTrainMenu.text = maxSpeed.ToString() + "KM/H";
+                        break;
+                    }
+                case 1:
+                    {
+                        chanceBroke = tUpgrade[1].upgradeCount;
+                        break;
+                    }
+                case 2:
+                    {
+                        maxHealth = tUpgrade[2].upgradeCount;
+                        uiScript.maxHealthTrainTrainMenu.text = maxHealth.ToString();
+                        break;
+                    }
+                case 3:
+                    {
+                        wagonsLoadingSpeed = tUpgrade[3].upgradeCount;
+                        break;
+                    }
+                case 4:
+                    {
+                        uiScript.upgradeTrainPrice.transform.SetParent(uiScript.centerUpgradeTrain.transform);
+                        uiScript.upgradeTrainPrice.GetComponent<RectTransform>().anchoredPosition = Vector3.zero;
+                        uiScript.upgradeTrain.interactable = false;
+                        uiScript.upgradeTrainPrice.text = "MaxLvl";
+                        wagonSizeRatio = tUpgrade[4].upgradeCount;
+                        break;
+                    }
+            }
+            upgradeLvl++;
+            if(upgradeLvl < tUpgrade.Length)
+                isUpgradeTicket = tUpgrade[upgradeLvl].isTickets;
+        }
+        uiScript.CheckTrainUpgrade(this);
+    }
+    private void ShowPrice()
+    {
+        if (totalCargoPrice != 0)
+        {
+            canvas.SetActive(true);
+            scInfo.tScript = this;
+            scInfo.canvas = canvas;
+            scInfo.ShowInfoTrain(this, totalCargoPrice);
+        }
+    }
+    public void SellTrain()
+    {
+        tsScript.mainScript.pData.ChangeMoney(this.gameObject, +sellPrice + sellExtraPrice);
+        int v = wagon.Count;
+        tPointer.Destroy();
+        for (int i = 0; i < v; i++)
+        {
+            tsScript.priceManager.Sell(wagon[i], wagon[i].loadWeight, wagon[i].typeOfWeight);
+            Destroy(wagon[i].gameObject);
+        }
+        for (int b = 0; b < tsScript.mainScript.allTowns.Count; b++)
+        {
+            if (tsScript.mainScript.allTowns[b].trains.Contains(this))
+                tsScript.mainScript.allTowns[b].trains.Remove(this);
+        }
+        tsScript.uiScript.trainListDepot.Remove(pref);
+        Destroy(pref);
+        tsScript.train.Remove(this.gameObject);
+        tsScript.uiScript.CloseSellMenuTrain();
+        tsScript.uiScript.CloseMenu();
+        tsScript.uiScript.OpenDepot();
+        tsScript.tScript = null;
+        Destroy(gameObject);
+    }
+    public void ShowHp()
+    {
+        CheckHealth();
+        CheckRepair();
+        CalculateSellPrice();
+        if (tsScript.mainScript.isDepotOpen == true)
+        {
+            healthText.text = health.ToString();
+            maxHealthText.text = maxHealth.ToString();
+        }
+        if (tsScript.tScript == this)
+        {
+            if (tsScript.mainScript.isTrainMenuOpen == true)
+            {
+                uiScript.healthTrainTrainMenu.color = colorHealth;
+                uiScript.healthTrainTrainMenu.text = tsScript.tScript.health.ToString();
+                uiScript.imageHealthTrainMenu.color = colorHealth;
+                uiScript.maxHealthTrainTrainMenu.text = tsScript.tScript.maxHealth.ToString();
+                if (uiScript.isRepairMenuOpen == true)
+                    uiScript.UpdateRepairInfo();
+                if (uiScript.isSellMenuOpen == true)
+                    uiScript.UpdateInfoSellMenuTrain();
+            }
+        }
+    }
+    private void ChangeHP(float count)
+    {
+        health += count;
+        ShowHp();
+    }
+    private void CalculateSellPrice()
+    {
+        sellPrice = 0;
+        sellPrice = (health / maxHealth) * priceTrain;
+        sellExtraPrice = 0;
+        for (int i = 0; i < wagon.Count; i++)
+        {
+            sellExtraPrice += wagon[i].price * 1.2f;
+        }
+    }
+    private void Damage()
+    {
+        if (health - road.Damage < 0)
+        {
+            ChangeHP(-health);
+            if (lerpcoroutine != null)
+                StopCoroutine(lerpcoroutine);
+            lerpcoroutine = (LerpSpeed(speed, 0, 1f));
+            StartCoroutine(lerpcoroutine);
+            iBroke = true;
+            Msg("TrainIsBroken");
+        }
+        else
+            ChangeHP(-road.Damage);
+    }
+    private void RandomBroke()
+    {
+        float i = Random.Range(0f, 100f);
+        if (i <= chanceBroke)
+        {
+            Damage();
+        }
+    }
+    public void Repair()
+    {
+        if (tsScript.mainScript.pData.newMoney >= repairCost)
+        {
+            if (iBroke == true)
+            {
+                iBroke = false;
+                tPointer.Hide();
+                if (canIMove == true)
+                {
+                    if (lerpcoroutine != null)
+                        StopCoroutine(lerpcoroutine);
+                    lerpcoroutine = LerpSpeed(0, maxSpeed, 2f);
+                    StartCoroutine(lerpcoroutine);
+                }
+            }
+            tsScript.mainScript.pData.ChangeMoney(gameObject, -repairCost);
+            ChangeHP(+(newRepair - health));
+        }
+    }
+    private void CheckRepair()
+    {
+        float curr;
+        if (health + 30 <= maxHealth)
+        {
+            if (health <= 30)
+            {
+                repairCost = (priceTrain / 100) * 45;
+            }
+            else
+                repairCost = (priceTrain / 100) * 30;
+            newRepair = health + 30;
+        }
+        else
+        {
+            curr = maxHealth - health;
+            repairCost = (priceTrain / 100) * curr;
+            newRepair = health + curr;
+        }
+
+        if (newRepair >= maxHealth)
+            newRepairColor = tsScript.hpcolor[0];
+        else if (newRepair / maxHealth >= 0.8f)
+            newRepairColor = tsScript.hpcolor[1];
+        else if (newRepair / maxHealth >= 0.6f)
+            newRepairColor = tsScript.hpcolor[2];
+        else if (newRepair / maxHealth >= 0.4f)
+            newRepairColor = tsScript.hpcolor[3];
+        else if (newRepair / maxHealth >= 0.2f)
+            newRepairColor = tsScript.hpcolor[4];
+        else if (newRepair / maxHealth < 0.2f)
+            newRepairColor = tsScript.hpcolor[5];
+    }
+    private void CheckType()
+    {
+        switch (typeTrain)
+        {
+            case "Universal":
+                {
+                    colorTypeTrain = tsScript.colorTypeTrain[0];
+                    subNameTrain = "(U)";
+                    break;
+                }
+            case "Freight Only!":
+                {
+                    colorTypeTrain = tsScript.colorTypeTrain[1];
+                    subNameTrain = "(F)";
+                    break;
+                }
+            case "Pass Only!":
+                {
+                    colorTypeTrain = tsScript.colorTypeTrain[2];
+                    subNameTrain = "(P)";
+                    break;
+                }
+        }
+    }
+    private void CheckHealth()
     {
         if (health >= maxHealth)
             colorHealth = tsScript.hpcolor[0];
@@ -291,48 +710,39 @@ public class TrainScript : MonoBehaviour
             colorHealth = tsScript.hpcolor[4];
         else if (health / maxHealth < 0.2f)
             colorHealth = tsScript.hpcolor[5];
-        if (tsScript.mainScript.isTrainMenuOpen == true)
-        {
-            uiScript.healthTrainTrainMenu.color = colorHealth;
-            uiScript.imageHealthTrainMenu.color = colorHealth;
-        }
-    }
-    public IEnumerator checkHP()
-    {
-        checkhp(health);
-        yield return new WaitForSeconds(1f);
-        StartCoroutine(checkHP());
     }
     public void SelectThis()
     {
-        checkhp(health);
-        tsScript.tScript = this;
-        isTrainSelectDepot = true;
-        mask = pref.transform.GetChild(0).gameObject;
-        mask.SetActive(true);
-        uiScript.trainDepotImage.gameObject.SetActive(true);
-        uiScript.trainDepotImage.sprite = trainSprite;
-        uiScript.nameTrainDepot.gameObject.SetActive(true);
-        uiScript.nameTrainDepot.text = trainName;
-        uiScript.speedTrainDepot.gameObject.SetActive(true);
-        uiScript.speedTrainDepot.text = maxSpeed.ToString() + " KM/H";
-        maxHealthText.color = tsScript.colorSelect;
-        trainNameText.color = Color.white;
-        healthText.color = colorHealth;
-        healthText.text = health.ToString();
-        uiScript.selectTrainDepot.interactable = true;
-        /*for (int i = 0; i < wagon.Count; i++)
+        if (!isTrainSelectDepot)
         {
-            if (wagon)
+            CheckHealth();
+            tsScript.tScript = this;
+            isTrainSelectDepot = true;
+            mask = pref.transform.GetChild(0).gameObject;
+            mask.SetActive(true);
+            uiScript.trainDepotImage.gameObject.SetActive(true);
+            uiScript.trainDepotImage.sprite = trainSprite;
+            uiScript.nameTrainDepot.gameObject.SetActive(true);
+            uiScript.nameTrainDepot.text = trainName;
+            uiScript.speedTrainDepot.gameObject.SetActive(true);
+            uiScript.speedTrainDepot.text = maxSpeed.ToString() + " KM/H";
+            uiScript.infoDepot.SetActive(false);
+            for (int v = 0; v < uiScript.wagonTrainMenu.Length; v++)
+                uiScript.wagonDepot[v].gameObject.SetActive(false);
+            for (int i = 0; i < wagon.Count; i++)
             {
                 uiScript.wagonDepot[i].gameObject.SetActive(true);
-                uiScript.wagonDepot[i].sprite = wagonSprite[i];
+                uiScript.wagonDepot[i].sprite = wagon[i].wagonSprite;
             }
-            else
-                Debug.Log(i + " null");
-        }*/
+            maxHealthText.color = tsScript.colorSelect;
+            trainNameText.color = Color.white;
+            healthText.color = colorHealth;
+            healthText.text = health.ToString();
+            uiScript.selectTrainDepot.interactable = true;
+        }
+        else
+            CloseElementDepot();
     }
-
     public void CloseElementDepot()
     {
         isTrainSelectDepot = false;
@@ -345,43 +755,12 @@ public class TrainScript : MonoBehaviour
         trainNameText.color = tsScript.colorSecondNeutral;
         healthText.color = tsScript.colorNeutral;
         uiScript.selectTrainDepot.interactable = false;
-        /*for (int i = 0; i < wagon.Length; i++)
-        {
-            if (wagon[i] == true)
-            {
-                uiScript.wagonDepot[i].gameObject.SetActive(false);
-                uiScript.wagonDepot[i].sprite = null;
-            }
-        }*/
-    }
-    public void RepairTrain()
-    {
-
-    }
-    public void SellTrain()
-    {
-        tsScript.train.Remove(this.gameObject);
-        Destroy(pref);
-        Destroy(this.gameObject);
-    }
-    public void BuyWagon(string typeWagon)
-    {
-        if (wagon.Count == 0)
-            tPointer.Hide();
-        if (typeWagon == "Freight")
-        {
-            var Wagon = Instantiate(tsScript.wagonPref[0], gameObject.transform);
-            Wagon.train = this;
-            gameObject.transform.position += transform.forward * 0.65f;
-            Wagon.Spawn();
-            wagon.Add(Wagon.GetComponent<WagonScript>());
-        }
-        else
-        {
-            var Wagon = Instantiate(tsScript.wagonPref[1], placeForWagon[wagon.Count].transform);
-        }
-        canILoad = true;
-        Debug.Log(typeWagon);
+        uiScript.trainDepotImage.gameObject.SetActive(false);
+        uiScript.nameTrainDepot.gameObject.SetActive(false);
+        uiScript.speedTrainDepot.gameObject.SetActive(false);
+        uiScript.infoDepot.SetActive(true);
+        for (int v = 0; v < uiScript.wagonDepot.Count; v++)
+            uiScript.wagonDepot[v].gameObject.SetActive(false);
     }
     public void AddDepotElement()
     {
@@ -400,10 +779,26 @@ public class TrainScript : MonoBehaviour
         healthText = currentHealth.GetComponent<TextMeshProUGUI>();
         healthText.text = health.ToString();
     }
-    void OnTriggerEnter(Collider other)
+    private void Msg(string msg)
+    {
+        if (lastmsg != msg)
+        {
+            lastmsg = msg;
+            tPointer.Hide();
+            tPointer.Spawn(gameObject, msg, true);
+        }
+    }
+    private void OnTriggerEnter(Collider other)
     {
         if (other.tag =="City")
         {
+            if (canIMove == true)
+            {
+                if (lerpcoroutine != null)
+                    StopCoroutine(lerpcoroutine);
+                lerpcoroutine = LerpSpeed(speed, 1f, breakSpeed);
+                StartCoroutine(lerpcoroutine);
+            }
             if (other.name == way[0].gameObject.name)
                 placeWhereIAm = way[0];
             if (other.name == way[1].gameObject.name)
@@ -414,15 +809,31 @@ public class TrainScript : MonoBehaviour
             if (road.point.Contains(other.gameObject.transform))
             {
                 if (directionMovement == "Forward")
+                {
                     target++;
+                    if (target == road.point.Count)
+                    {
+                        if (lerpcoroutine != null)
+                            StopCoroutine(lerpcoroutine);
+                        lerpcoroutine = LerpSpeed(speed, 5f, breakSpeed);
+                        StartCoroutine(lerpcoroutine);
+                    }
+                        
+                }
+
                 else if (directionMovement == "Backward")
+                {
                     target--;
+                    if (target == -1)
+                    {
+                        if (lerpcoroutine != null)
+                            StopCoroutine(lerpcoroutine);
+                        lerpcoroutine = LerpSpeed(speed, 5f, breakSpeed);
+                        StartCoroutine(lerpcoroutine);
+                    }
+                }
+                RandomBroke();
             }
         }
     }
-    /*void OnTriggerExit(Collider other)
-    {
-        if (other.tag == "City")
-            placeWhereIAm = null;
-    }*/
 }

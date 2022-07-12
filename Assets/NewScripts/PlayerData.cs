@@ -7,33 +7,65 @@ public class PlayerData : MonoBehaviour
 {
     public MainSceneScript mainScript;
     public float money;
+    public float newMoney;
     public float tickets;
+    public float newTickets;
     public bool[] trainUnlocked;
+    private void Update()
+    {
+        if (money != newMoney)
+        {
+            money = Mathf.Lerp(money, newMoney, 3f * Time.deltaTime);
+        }
+        if (tickets != newTickets)
+        {
+            tickets = Mathf.Lerp(tickets, newTickets, 3f * Time.deltaTime);
+        }
+    }
     public void ChangeMoney(GameObject sender, float count)
     {
-        money += count;
-        Debug.Log("Money " + count + "From: " + sender + "Balance: " + money);
+        newMoney += count;
+        CheckManuValues();
+        //Debug.Log("Money " + count + "From: " + sender + "Balance: " + newMoney);
     }
     public void ChangeTickets(GameObject sender, float count)
-    {
-        tickets += count;
-        Debug.Log("Tickets " + count + "From: " + sender + "Balance: " + tickets);
+    {       
+        newTickets += count;
+        CheckManuValues();
+        //Debug.Log("Tickets " + count + "From: " + sender + "Balance: " + newTickets);
     }
-    /*public void AddCoins()
+    public void ChangeTrainState(int numTrain, bool openOrClose)
     {
-        money += 1000f;
-    }
-    public void Resett()
-    {
-        mainScript.townRawScript.upgradeLvl = 0;
-        mainScript.townRawScript.productFromRaw = mainScript.townRawScript.newProductFromRaw[mainScript.townRawScript.upgradeLvl];
-        mainScript.townRawScript.rawToProduct = mainScript.townRawScript.newRawToProduct[mainScript.townRawScript.upgradeLvl];
-    }
-    public void AddRawToTown()
-    {
-        if (mainScript.townRawScript.isTown == true)
+        if (numTrain <= trainUnlocked.Length)
         {
-            mainScript.townRawScript.rawCount += 500f;
+            if (openOrClose == true)
+            {
+                trainUnlocked[numTrain] = true;
+                Debug.Log("Train: " + numTrain + " unlocked!");
+            }
+            else
+            {
+                trainUnlocked[numTrain] = false;
+                Debug.Log("Train: " + numTrain + " locked!");
+            }
         }
-    }*/
+        else
+            Debug.LogWarning("Wrong NumberOfTrain! Enterred number: " + numTrain + " Max Train: " + trainUnlocked.Length);
+        mainScript.uiScript.CheckUnlockedTrains();
+    }
+    private void CheckManuValues()
+    {
+        if (mainScript.isTrainShopOpen)
+            mainScript.uiScript.CheckUnlockedTrains();
+        else if (mainScript.uiScript.idMenu == 3)
+        {
+            mainScript.uiScript.CheckTrainUpgrade(mainScript.uiScript.tsScript.tScript);
+            if (mainScript.uiScript.isRepairMenuOpen)
+                mainScript.uiScript.UpdateRepairInfo();
+            else if (mainScript.uiScript.isSellMenuOpen)
+                mainScript.uiScript.UpdateInfoSellMenuTrain();
+            else if (mainScript.uiScript.isWagonBuyMenuOpen)
+                mainScript.uiScript.UpdateWagonBuyMenu();
+        }
+    }
 }

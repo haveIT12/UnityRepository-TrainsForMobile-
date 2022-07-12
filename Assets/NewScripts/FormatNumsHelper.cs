@@ -18,7 +18,7 @@ public static class FormatNumsHelper
         num = Mathf.Round((float)num);
 
         int i = 0;
-        while (i + 1 < names.Length && num >= 10000d)
+        while (i + 1 < names.Length && num >= 1000d)
         {
             num /= 1000d;
             i++;
@@ -33,7 +33,7 @@ public static class FormatNumsHelper
         num = Mathf.Round(num);
 
         int i = 0;
-        while (i + 1 < names.Length && num >= 10000d)
+        while (i + 1 < names.Length && num >= 1000d)
         {
             num /= 1000f;
             i++;
@@ -48,7 +48,7 @@ public static class FormatNumsHelper
         num = Decimal.Round(num);
 
         int i = 0;
-        while (i + 1 < names.Length && num >= 10000m)
+        while (i + 1 < names.Length && num >= 1000m)
         {
             num /= 1000m;
             i++;

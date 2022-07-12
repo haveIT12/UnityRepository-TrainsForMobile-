@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class TrainSystemScript : MonoBehaviour
 {
     [Header("Links")]
+    public PriceManager priceManager;
     public MainSceneScript mainScript;
     public UserInterfaceScript uiScript;
     public TownRawManager trManager;
@@ -19,7 +20,7 @@ public class TrainSystemScript : MonoBehaviour
     public GameObject[] trainPrefab;
     [Space]
     [Header("Other")]
-    public WagonScript[] wagonPref;
+    public WagonScript[] wagonPref;//0-freight 1-passenger
     public float bottomsize;
     public bool isTrainSelectDepot;
     [Space]
@@ -36,7 +37,7 @@ public class TrainSystemScript : MonoBehaviour
     }
     public void BuyTrain(int id)
     {
-        if (mainScript.pData.money >= tInfo[id].priceTrain)
+        if (mainScript.pData.newMoney >= tInfo[id].priceTrain)
         {
             if (train.Count < 20)
             {
@@ -53,7 +54,7 @@ public class TrainSystemScript : MonoBehaviour
                 uiScript.CloseMenu();
                 //mainScript.SelectTrainWay();
                 trManager.OpenAll();
-                trManager.train = train[train.Count-1];
+                trManager.tScript = tScript;
                 mainScript.camToTargetCoroutine = mainScript.CamToTarget(trManager.gameObject, true, 15f);
                 mainScript.StartCoroutine(mainScript.camToTargetCoroutine);
             }
@@ -80,19 +81,22 @@ public class TrainSystemScript : MonoBehaviour
     {
         for (int i = 0; i < train.Count; i++)
         {
-            if (train[i].GetComponent<TrainScript>().isTrainSelectDepot == true)
+            if (train[i] != TrainScr)
             {
-                train[i].GetComponent<TrainScript>().CloseElementDepot();
+                if (train[i].GetComponent<TrainScript>().isTrainSelectDepot == true)
+                {
+                    train[i].GetComponent<TrainScript>().CloseElementDepot();
+                }
             }
         }
-        TrainScr.SelectThis();
         tScript = TrainScr;
+        TrainScr.SelectThis();
     }
-    public void BuyWagon(string type)
+    public void BuyWagon(int type)
     {
         for (int i = 0; i < wagonPref.Length; i++)
         {
-            if (mainScript.pData.money >= wagonPref[i].price)
+            if (mainScript.pData.newMoney >= wagonPref[i].price)
             {
                 mainScript.pData.ChangeMoney(wagonPref[i].gameObject, -wagonPref[i].price);
                 tScript.BuyWagon(type);
@@ -103,5 +107,7 @@ public class TrainSystemScript : MonoBehaviour
                 uiScript.wagonButtonBuy[i].interactable = false;
         }
     }
-    public void Move() => tScript.Move();
+    public void Repair() => tScript.Repair();
+    public void Upgrade() => tScript.Upgrade();
+    public void SellTrain() => tScript.SellTrain();
 }

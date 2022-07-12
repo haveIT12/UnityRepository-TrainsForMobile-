@@ -11,6 +11,7 @@ public class RailRoadScript : MonoBehaviour
     public bool isRailSelected;
     public int trainsCountOnRail;
     public int trainsCountOnRailMax;
+    public float Damage;
     private Transform[] childCollider;
     public List<Transform> point;
     public List<TownRawScript> townraw; // 0 - start   1 - finish
@@ -64,7 +65,7 @@ public class RailRoadScript : MonoBehaviour
         rsScript.roadSelected = this;
         gameObject.GetComponent<MeshRenderer>().material = mat[2];
         mainScript.uiScript.buyRail.SetActive(true);
-        mainScript.uiScript.priceRoadText.text = FormatNumsHelper.FormatNum(price);
+        mainScript.uiScript.priceRoadText.text = FormatNumsHelper.FormatNum(price) + "$";
         mainScript.StopCoroutine(mainScript.camToTargetCoroutine);
         mainScript.camToTargetCoroutine = mainScript.CamToTarget(gameObject, true, 15f);
         mainScript.StartCoroutine(mainScript.camToTargetCoroutine);

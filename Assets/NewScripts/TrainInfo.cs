@@ -17,6 +17,11 @@ public class TrainInfo : ScriptableObject
     private float _maxHealth;
     [SerializeField]
     private string _typeTrain;
+    [SerializeField]
+    private float _chanceBroke;
+    [SerializeField]
+    private float _loadingSpeed;
+
 
     public string trainName => this._trainName;
     public Sprite spriteTrain => this._spriteTrain;
@@ -24,4 +29,6 @@ public class TrainInfo : ScriptableObject
     public float priceTrain => this._priceTrain;
     public float maxHealth => this._maxHealth;
     public string typeTrain => this._typeTrain;
+    public float chanceBroke => this._chanceBroke;
+    public float loadingSpeed => this._loadingSpeed;
 }

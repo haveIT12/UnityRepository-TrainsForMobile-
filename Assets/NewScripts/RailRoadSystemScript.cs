@@ -18,10 +18,6 @@ public class RailRoadSystemScript : MonoBehaviour
     }
     public void OpenBuild()
     {
-        for (int b = 0; b < uiScript.tsScript.train.Count; b++)
-        { 
-            uiScript.tsScript.train[b].GetComponent<TrainScript>().tPointer.Hide();
-        }
         if (mainScript.isTownRawInfoOpened == true)
             mainScript.townRawScript.CloseTownRawInfo();
         uiScript.canvasMainUI.SetActive(false);
@@ -48,5 +44,6 @@ public class RailRoadSystemScript : MonoBehaviour
         if (roadSelected != null)
             roadSelected.CloseSelect();
         uiScript.canvasBuildRail.SetActive(false);
+        mainScript.StopCoroutine(mainScript.camToTargetCoroutine);
     }
 }

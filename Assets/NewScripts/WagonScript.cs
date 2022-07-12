@@ -4,77 +4,239 @@ using UnityEngine;
 
 public class WagonScript : MonoBehaviour
 {
+    [Header("Links")]
     public TrainScript train;
+    public GameObject touchPlace;
+    public GameObject secondPlace;
+    public Mesh[] meshWagon;//0-red(raw) 1-green(product)
+
+    private MeshFilter currentMesh;
+    private bool canILoad;
+    private bool canIUnload;
+    private bool loadOrUnload;//true-load; false-unload;
+    public bool isWagonSpawned;
+    public int wagonNum;
+    private string productOrRaw;
+
+    [Space]
+    [Header("Settings Wagon")]
     public float price;
     public string typeOfWagon;
     public string typeOfWeight;
     public float loadWeight;
     public float newLoadWeight;
+    public float nLW;
     public float maxLoadWeight;
-    public float speedOfLoading;
-    public bool canILoad;
-    public bool canIUnload;
-    public bool loaded;
-    public bool unLoaded;
-    public string productOrRaw;
-
-    public int target;
-    private int wagonNum;
-    public GameObject touchPlace;
-    public GameObject secondPlace;
+    [SerializeField]
+    private float maxLoadPassenger;
+    [SerializeField]
+    private float maxLoadProduct;
+    [SerializeField]
+    private float maxLoadRaw;
+    public float speedOfLoading;//5f
+    public bool isLoaded;
+    public bool isUnloaded;
+    public Bounds bounds;
+    public Sprite wagonSprite;
+    public Sprite spriteCargo;
+    public Sprite spriteCargoR;
+    public Sprite spriteCargoP;
+    public Sprite emptySpriteCargo;
+    public Sprite passengersSprite;
+    public int loadWagonNum;
+    public float totalPrice;
     public float sp;
     public float trnsp;
+
+    private void Awake()
+    {
+        bounds = GetComponent<MeshFilter>().sharedMesh.bounds;
+        currentMesh = gameObject.GetComponent<MeshFilter>();
+    }
     private void FixedUpdate()
     {
+        if (train.tsScript.tScript == train)
+        {
+            if (train.tsScript.uiScript.idMenu == 3)
+                train.tsScript.uiScript.loadWeightTrainMenu[wagonNum].text = FormatNumsHelper.FormatNum(loadWeight) + "/" + FormatNumsHelper.FormatNum(maxLoadWeight);
+        }
+        if (loadWeight != newLoadWeight)
+        {
+            loadWeight = Mathf.Lerp(loadWeight, newLoadWeight, Time.fixedDeltaTime * speedOfLoading);
+            if (loadOrUnload == true)
+            {
+                if (newLoadWeight - loadWeight < 0.5)
+                {
+                    loadWeight = newLoadWeight;
+                    isUnloaded = false;
+                    isLoaded = true;
+                    train.IsWagonsLoad();
+                }
+            }
+            else if (loadOrUnload == false)
+            {
+                if (newLoadWeight - loadWeight > -0.5)
+                {
+                    train.tsScript.priceManager.Sell(this, nLW, typeOfWeight);
+                    train.totalCargoPrice += totalPrice;
+                    totalPrice = 0;
+                    if (train.tsScript.tScript == train)
+                        train.uiScript.wagonCargoSprite[wagonNum].sprite = emptySpriteCargo;
+                    nLW = 0;
+                    loadWeight = newLoadWeight;
+                    isLoaded = false;
+                    isUnloaded = true;
+                    Hide();
+                    train.IsWagonsUnload();
+                }
+            }
+        }
         if (train.canIMove == true)
         {
-            if (wagonNum == 0)
+            if (isWagonSpawned == true)
             {
-                Vector3 direction = (train.dir.transform.position - secondPlace.transform.position).normalized;
-                gameObject.transform.forward = direction;
-                gameObject.transform.position += gameObject.transform.forward * (train.speed / sp) * Time.fixedDeltaTime;
-                Quaternion lookOnLook = Quaternion.LookRotation(direction);
-                gameObject.transform.rotation = Quaternion.Slerp(gameObject.transform.rotation, lookOnLook, (train.speed / trnsp) * Time.fixedDeltaTime);
-            }
-            else
-            {
-                Vector3 direction = (train.wagon[wagonNum-1].secondPlace.transform.position - secondPlace.transform.position).normalized;
+                Vector3 direction;
+                if (loadWagonNum == 0)
+                    direction = (train.dir.transform.position - secondPlace.transform.position).normalized;
+                else
+                    direction = (train.wagonsLoad[loadWagonNum-1].secondPlace.transform.position - secondPlace.transform.position).normalized;
                 gameObject.transform.forward = direction;
                 gameObject.transform.position += gameObject.transform.forward * (train.speed / sp) * Time.fixedDeltaTime;
                 Quaternion lookOnLook = Quaternion.LookRotation(direction);
                 gameObject.transform.rotation = Quaternion.Slerp(gameObject.transform.rotation, lookOnLook, (train.speed / trnsp) * Time.fixedDeltaTime);
             }
         }
-    }
-    private void Update()
-    {
-        if (canILoad == true)
+        else
         {
-            loadWeight = Mathf.Lerp(loadWeight, newLoadWeight, speedOfLoading);
-            if (newLoadWeight - loadWeight <= 0.1f)
+            if (canILoad == true)//Если загрузка разрешена
             {
-                Debug.Log("1");
-                loadWeight = newLoadWeight;
+                newLoadWeight += maxLoadWeight;
+                nLW = newLoadWeight;
                 canILoad = false;
             }
+            if (canIUnload == true)
+            {
+                if (typeOfWagon == "Freight")
+                {
+                    if (productOrRaw == "Raw")
+                    {
+                        train.placeWhereIAm.ChangeRaw(nLW);
+                        newLoadWeight = 0;
+                        canIUnload = false;
+                    }
+                    else if (productOrRaw == "Product")
+                    {
+                        newLoadWeight = 0;
+                        canIUnload = false;
+                    }
+                }
+                else
+                {
+                    if (train.placeWhereIAm.isTown == false)
+                    {
+                        train.placeWhereIAm.ChangePeople(nLW);
+                        newLoadWeight = 0;
+                        canIUnload = false;
+                    }
+                    newLoadWeight = 0;
+                    canIUnload = false;
+                }
+            }
         }
+
     }
     public void Spawn()
     {
-        GetWagonNumber();
-        gameObject.transform.SetParent(train.transform);
-        if(wagonNum == 0)
-            gameObject.transform.position = train.touchPlace.transform.position;
+        speedOfLoading = train.wagonsLoadingSpeed;
+        if (typeOfWagon == "Passenger")
+            spriteCargo = passengersSprite;
+        isWagonSpawned = true;
+        GetWagonNumber();//Узнаем номер вагона
+        if (loadWagonNum == 0)//Если вагон первый
+        {
+            gameObject.transform.SetParent(train.transform);//Парент вагона = поезд
+            gameObject.transform.position = train.touchPlace.transform.position;//Позиция = точка прикосновения в поезде
+        }
         else
-            gameObject.transform.position = train.wagon[wagonNum-1].touchPlace.transform.position;
-        gameObject.transform.SetParent(train.tsScript.transform);
-        if (train.canILoad == true)
-            StartCoroutine(CheckLoad());
+        {
+            gameObject.transform.SetParent(train.wagonsLoad[loadWagonNum - 1].transform);//Парент вагона = предыдущий поезд
+            gameObject.transform.position = train.wagonsLoad[loadWagonNum - 1].touchPlace.transform.position;//Позиция = точка прикосновения в предыдущем вагоне
+        }
+        gameObject.transform.rotation = train.transform.rotation;//Поворачиваем вагон туда, куда смотрит поезд
+        gameObject.transform.SetParent(train.tsScript.transform);//Парент вагона = TrainSystemScript.gameObject
+    }
+    public void Unload()
+    {
+        loadOrUnload = false;
+        if (typeOfWagon == "Passenger")
+        {
+            canIUnload = true;
+        }
+        else
+        {
+            if (train.placeWhereIAm.isTown == true)//Если место где находится поезд это город
+            {
+                if (productOrRaw == "Raw")
+                {
+                    if (typeOfWeight == train.placeWhereIAm.rawType)
+                        canIUnload = true;
+
+                }
+                else if (productOrRaw == "Product")
+                    canIUnload = true;
+            }
+            else
+            {
+                isLoaded = false;
+                isUnloaded = true;
+                train.IsWagonsUnload();
+            }
+        }
+    }
+    public void Load()
+    {
+        loadOrUnload = true;
+        if (typeOfWagon == "Passenger")
+        {
+            typeOfWeight = "Passenger";
+            if (train.tsScript.tScript == train)
+            {
+                train.uiScript.wagonCargoSprite[wagonNum].sprite = spriteCargo;
+            }
+        }
+        else
+        {
+            if (train.placeWhereIAm.isTown)//Если место где находится поезд это город
+            {
+                
+                spriteCargo = train.placeWhereIAm.businessSprite;
+                wagonSprite = spriteCargoP;
+                productOrRaw = "Product";//Тип груза - готовый продукт
+                typeOfWeight = train.placeWhereIAm.productType;//Тип продукта - продукт место где поезд находится
+                currentMesh.mesh = meshWagon[1];
+            }
+            else//Если место где находится поезд это не город
+            {
+                
+                spriteCargo = train.placeWhereIAm.rawSprite;
+                wagonSprite = spriteCargoR;
+                productOrRaw = "Raw";//Тип груза - сырье
+                typeOfWeight = train.placeWhereIAm.rawType;//Тип сырья - сырье место где поезд находится
+                currentMesh.mesh = meshWagon[0];
+            }
+            if (train.tsScript.tScript == train)
+            {
+                train.uiScript.wagonCargoSprite[wagonNum].sprite = spriteCargo;
+                train.uiScript.wagonTrainMenu[wagonNum].sprite = wagonSprite;
+            }
+        }
+        
+        canILoad = true;
     }
     public void Hide()
     {
-        Debug.Log("Hide " + this);
-        gameObject.SetActive(false);
+        isWagonSpawned = false;
+        gameObject.transform.position = new Vector3(0, -1000, 0);
     }
     public void GetWagonNumber()
     {
@@ -83,234 +245,22 @@ public class WagonScript : MonoBehaviour
             if (train.wagon[i] == this)
                 wagonNum = i;
         }
-    }
-    public IEnumerator LoadToTheWagon(string typeWeight, float count, string productRaw)
-    {
-        productOrRaw = productRaw;
-        typeOfWeight = typeWeight;
-        newLoadWeight = count;
-        canILoad = true;
-        yield return new WaitForSeconds(speedOfLoading);
-    }
-    private IEnumerator UnLoad()
-    {
-        Debug.Log("kl");
-        if (train.placeWhereIAm.isTown == true)
+        for (int v = 0; v < train.wagonsLoad.Count; v++)
         {
-            if (typeOfWagon == "Freight")
-            {
-                if (productOrRaw == "Raw")
-                {
-                    if (loadWeight + train.placeWhereIAm.newRaw <= train.placeWhereIAm.maxStorageRaw)
-                    {
-                        for (int i = 0; i < loadWeight; loadWeight -= 1)
-                        {
-                            train.placeWhereIAm.ChangeRaw(1);
-                            yield return new WaitForSeconds(speedOfLoading / 100);
-                        }
-                        if (loadWeight == 0)
-                        {
-                            train.placeWhereIAm.newRaw = Mathf.RoundToInt(train.placeWhereIAm.newRaw);
-                            train.placeWhereIAm.rawCount = train.placeWhereIAm.newRaw;
-                            unLoaded = true;
-                            train.IsWagonsUnLoaded();
-                            Debug.Log(train.IsWagonsUnLoaded());
-                        }
-                    }
-                    else
-                        StartCoroutine(CheckUnload());
-                }
-                else if (productOrRaw == "Product")
-                {
-                    if (loadWeight != 0)
-                    {
-                        for (int i = 0; i < loadWeight; loadWeight -= 1)
-                        {
-                            train.tsScript.mainScript.pData.ChangeMoney(gameObject, 1000);
-                            yield return new WaitForSeconds(speedOfLoading / 100);
-                        }
-                        if (loadWeight == 0)
-                        {
-                            unLoaded = true;
-                            train.IsWagonsUnLoaded();
-                            Debug.Log(train.IsWagonsUnLoaded());
-                        }
-                    }
-                }
-            }
-            else if (typeOfWagon == "Passenger")
-            {
-
-            }
-        }
-        else
-        {
-            unLoaded = true;
-            train.IsWagonsUnLoaded();
-        }
-        StopCoroutine(UnLoad());
-    }
-    private IEnumerator Load()
-    {
-        if (train.placeWhereIAm.isTown == true)
-        {
-            if (typeOfWagon == "Freight")
-            {
-                if (train.placeWhereIAm.productCount != 0)
-                {
-                    if (loadWeight <= maxLoadWeight)
-                    {
-                        if (loadWeight == maxLoadWeight)
-                        {
-                            typeOfWeight = train.placeWhereIAm.productType;
-                            productOrRaw = "Product";
-                            loaded = true;
-                            train.IsWagonsLoaded();
-                            Debug.Log(train.IsWagonsLoaded());
-                        }
-                        if (train.placeWhereIAm.productCount >= 1)
-                        {
-                            for (int i = 0; i < maxLoadWeight; i++)
-                            {
-                                loadWeight += 1;
-                                train.placeWhereIAm.ChangeProduct(-1);
-                                yield return new WaitForSeconds(speedOfLoading / 100);
-                            }
-                        }
-                    }
-                }
-                else if (train.placeWhereIAm.productCount == 0 && loadWeight != 0)
-                {
-                    typeOfWeight = train.placeWhereIAm.productType;
-                    productOrRaw = "Product";
-                    loaded = true;
-                    train.IsWagonsLoaded();
-                    Debug.Log(train.IsWagonsLoaded());
-                }
-
-            }
-            else if (typeOfWagon == "Passenger")
-            {
-
-            }
-        }
-        else
-        {
-            if (train.placeWhereIAm.newRaw != 0)
-            {
-                if (loadWeight <= maxLoadWeight)
-                {
-                    for (int i = 0; i < maxLoadWeight; i++)
-                    {
-                        if (train.placeWhereIAm.rawCount >= 1)
-                        {
-                            loadWeight += 1;
-                            train.placeWhereIAm.ChangeRaw(-1);
-                            yield return new WaitForSeconds(speedOfLoading / 100);
-                        }
-                    }
-                    if (loadWeight == maxLoadWeight)
-                    {
-                        typeOfWeight = train.placeWhereIAm.rawType;
-                        productOrRaw = "Raw";
-                        loaded = true;
-                        train.IsWagonsLoaded();
-                        Debug.Log(train.IsWagonsLoaded());
-                    }
-                    else if (loadWeight < maxLoadWeight && train.placeWhereIAm.rawCount != 0)
-                    {
-                        StartCoroutine(Load());
-                    }
-                    if (train.placeWhereIAm.productCount == 0 && loadWeight != 0)
-                    {
-                        typeOfWeight = train.placeWhereIAm.productType;
-                        productOrRaw = "Product";
-                        loaded = true;
-                        train.IsWagonsLoaded();
-                        Debug.Log(train.IsWagonsLoaded());
-                    }
-                }
-            }
-            else if (train.placeWhereIAm.productCount == 0 && loadWeight != 0)
-            {
-                typeOfWeight = train.placeWhereIAm.productType;
-                productOrRaw = "Product";
-                loaded = true;
-                train.IsWagonsLoaded();
-                Debug.Log(train.IsWagonsLoaded());
-            }
-            else if(train.placeWhereIAm.productCount == 0)
-                StartCoroutine(CheckLoad());
+            if (train.wagonsLoad[v] == this)
+                loadWagonNum = v;
         }
     }
-    public IEnumerator CheckLoad()
+    public void CheckLoadWeight()
     {
-        train.CheckPlace();
         if (typeOfWagon == "Freight")
         {
-            if (train.placeWhereIAmGoing.isTown == true)
-            {
-                if (train.placeWhereIAm.isTown == true)
-                    productOrRaw = "Product";
-                else
-                    productOrRaw = "Raw";
-
-                if (productOrRaw == "Raw")
-                {
-                    if (train.placeWhereIAm.rawCount != 0)
-                        StartCoroutine(Load());
-                    else
-                    {
-                        yield return new WaitForSeconds(2f);
-                        StartCoroutine(CheckLoad());
-                    }
-                }
-                else if (productOrRaw == "Product")
-                {
-                    if (train.placeWhereIAm.newProduct != 0)
-                    {
-                        StartCoroutine(Load());
-                    }
-                    else
-                    {
-                        yield return new WaitForSeconds(2f);
-                        StartCoroutine(CheckLoad());
-                    }
-                }
-            }
+            if (train.placeWhereIAm.isTown)
+                maxLoadWeight = maxLoadProduct * train.wagonSizeRatio;
             else
-            {
-                StartCoroutine(UnLoad());
-            }
+                maxLoadWeight = maxLoadRaw * train.wagonSizeRatio;
         }
-        else if (typeOfWagon == "Passenger")
-        {
-
-        }
-    }
-    public IEnumerator CheckUnload()
-    {
-        canIUnload = false;
-        if (typeOfWagon == "Freight")
-        {
-            if (productOrRaw == "Raw")
-            {
-                if (train.placeWhereIAm.rawCount + loadWeight <= train.placeWhereIAm.maxStorageRaw)
-                    StartCoroutine(UnLoad());
-                else
-                {
-                    yield return new WaitForSeconds(2f);
-                    StartCoroutine(CheckUnload());
-                }
-            }
-            else if (productOrRaw == "Product")
-            {
-                
-            }
-        }
-        else if (typeOfWagon == "Passenger")
-        { 
-        
-        }
+        else
+            maxLoadWeight = maxLoadPassenger * train.wagonSizeRatio;
     }
 }

@@ -4,8 +4,12 @@ using UnityEngine;
 
 public class CanvasFaceToCamera : MonoBehaviour
 {
-    public Camera cam;
-    void Update()
+    public GameObject cam;
+    private void Start()
+    {
+        cam = GameObject.Find("Camera");
+    }
+    private void Update()
     {
         transform.forward = cam.transform.forward;
     }

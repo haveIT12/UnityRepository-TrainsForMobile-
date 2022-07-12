@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class TownRawManager : MonoBehaviour
 {
-    public GameObject train;
     public List<TownRawScript> town;
     public List<TownRawScript> selectedTown;
     public MainSceneScript mainScript;
     public UserInterfaceScript uiScript;
+    public TrainScript tScript;
     public Color[] colors;
     public Color currentColor;
     public float timeLerp;
@@ -27,6 +27,7 @@ public class TownRawManager : MonoBehaviour
                                 uiScript.panelSelectWay.SetActive(false);
                                 mainScript.uiScript.tipTextSelectWay.text = "Select FIRST station";
                                 UnSelectTown(trScript);
+                                CloseAll();
                                 OpenAll();
                                 break;
                             }
@@ -52,7 +53,7 @@ public class TownRawManager : MonoBehaviour
                                     uiScript.firstCityImageSelectWay.sprite = selectedTown[0].rawSprite;
                                 uiScript.firstCityNameSelectWay.text = selectedTown[0].townName;
                                 selectedTown[0].tPointer.Hide();
-                                selectedTown[0].tPointer.Spawn(selectedTown[0].gameObject, "FirstCitySelect");
+                                selectedTown[0].tPointer.Spawn(selectedTown[0].gameObject, "FirstCitySelect", true);
                                 break;
                             }
                     }
@@ -90,10 +91,6 @@ public class TownRawManager : MonoBehaviour
     }
     public void OpenAll()
     {
-        for (int b = 0; b < uiScript.tsScript.train.Count; b++)
-        {
-            uiScript.tsScript.train[b].GetComponent<TrainScript>().tPointer.Hide();
-        }
         mainScript.uiScript.goSelectWay.interactable = false;
         mainScript.uiScript.tipTextSelectWay.text = "Select FIRST station";
         mainScript.uiScript.canvasSelectWay.SetActive(true);
@@ -109,7 +106,6 @@ public class TownRawManager : MonoBehaviour
     }
     public void SetWayToTrain()
     {
-        TrainScript tScript = train.GetComponent<TrainScript>();
         tScript.way.Add(selectedTown[0]);
         tScript.way.Add(selectedTown[1]);
         for (int i = 0; i < selectedTown[0].road.Length; i++)
@@ -119,15 +115,18 @@ public class TownRawManager : MonoBehaviour
         }
         tScript.Spawn();
         CloseAll();
+        uiScript.OpenTrainMenu(tScript);
     }
     private void CloseAll()
     {
         uiScript.panelSelectWay.SetActive(false);
         mainScript.uiScript.canvasSelectWay.SetActive(false);
+            if(tScript.way.Count == 0)
         mainScript.uiScript.canvasMainUI.SetActive(true);
         mainScript.isSelectWayOpen = false;
         for (int i = 0; i < town.Count; i++)
         {
+            town[i].tPointer.Destroy();
             if (selectedTown.Contains(town[i]))
             {
                 UnSelectTown(town[i]);
@@ -145,7 +144,7 @@ public class TownRawManager : MonoBehaviour
             case 0:
                 {
                     trScript.tPointer.Hide();
-                    trScript.tPointer.Spawn(trScript.gameObject, "FirstCitySelect");
+                    trScript.tPointer.Spawn(trScript.gameObject, "FirstCitySelect", true);
                     if (trScript.isTown == true)
                         uiScript.firstCityImageSelectWay.sprite = trScript.businessSprite;
                     else
@@ -162,7 +161,7 @@ public class TownRawManager : MonoBehaviour
             case 1:
                 {
                     trScript.tPointer.Hide();
-                    trScript.tPointer.Spawn(trScript.gameObject, "SecondCitySelect");
+                    trScript.tPointer.Spawn(trScript.gameObject, "SecondCitySelect",true);
                     uiScript.secondCityImageSelectWay.gameObject.SetActive(true);
                     uiScript.secondCityNameSelectWay.gameObject.SetActive(true);
                     if (trScript.isTown == true)
@@ -178,7 +177,7 @@ public class TownRawManager : MonoBehaviour
             case 2:
                 {
                     trScript.tPointer.Hide();
-                    trScript.tPointer.Spawn(trScript.gameObject, "SecondCitySelect");
+                    trScript.tPointer.Spawn(trScript.gameObject, "SecondCitySelect",true);
                     if (trScript.isTown == true)
                         uiScript.secondCityImageSelectWay.sprite = trScript.businessSprite;
                     else
@@ -199,19 +198,24 @@ public class TownRawManager : MonoBehaviour
     }
     public void UnSelectTown(TownRawScript trScript)
     {
-        trScript.tPointer.Hide();
         trScript.isCitySelectWay = false;
         selectedTown.Remove(trScript);
         OpenTownForChoose(trScript);
     }
     public void OpenTownForChoose(TownRawScript trScript)
     {
-        trScript.tPointer.Hide();
-        trScript.tPointer.Spawn(trScript.gameObject, "CityCanBeSelected");
+        if(trScript.tPointer != null)
+            trScript.tPointer.Destroy();
+        trScript.tPointer.Spawn(trScript.gameObject, "CityCanBeSelected",true);
         trScript.TownRawCanvas.SetActive(true);
         trScript.openBtn.gameObject.SetActive(false);
         trScript.emptyBar.SetActive(false);
         trScript.fullBar.gameObject.SetActive(false);
+        if (trScript.isTown)
+        {
+            trScript.fullBarPeople.gameObject.SetActive(false);
+            trScript.emptyBarPeople.gameObject.SetActive(false);
+        }
         trScript.isCityCanBeSelectWay = true;
         trScript.outline.enabled = true;
         trScript.outline.OutlineMode = Outline.Mode.OutlineAll;
@@ -223,25 +227,19 @@ public class TownRawManager : MonoBehaviour
     public void CloseTownForChoose(TownRawScript trScript)
     {
         trScript.tPointer.Hide();
+        trScript.lastmsg = null;
         trScript.TownRawCanvas.SetActive(false);
         trScript.openBtn.gameObject.SetActive(true);
         trScript.emptyBar.SetActive(true);
         trScript.fullBar.gameObject.SetActive(true);
+        if (trScript.isTown)
+        {
+            trScript.fullBarPeople.gameObject.SetActive(true);
+            trScript.emptyBarPeople.gameObject.SetActive(true);
+        }
         trScript.isCityCanBeSelectWay = false;
         trScript.isCitySelectWay = false;
         trScript.outline.enabled = false;
         trScript.numWay = 3;
     }
-    /*public IEnumerator ColorLerp(TownRawScript trScript, Color colorTwo)
-    {
-        float timer = 0f;
-        while (timer < timeLerp)
-        {
-            trScript.outline.OutlineColor = Color.Lerp(trScript.outline.OutlineColor, colorTwo, timer / timeLerp);
-            timer += Time.deltaTime;
-            yield return null;
-        }
-        trScript.outline.OutlineColor = colorTwo;
-        yield return null;
-    }*/
 }

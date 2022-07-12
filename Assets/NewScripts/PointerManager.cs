@@ -14,4 +14,16 @@ public class PointerManager : MonoBehaviour
 	public Sprite noWagons;
 	public Sprite trainIsBroken;
 	public Sprite globalTrainError;
+	public Sprite peopleNotEnough;
+	public float InterfaceScale;
+	public List<TargetPointer> pointers;
+	public MainSceneScript mainScript;
+
+	public void HideAll()
+	{
+		for (int i = 0; i < pointers.Count; i++)
+		{
+			pointers[i].Hide();
+		}
+	}
 }

@@ -486,7 +486,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: E-50(C)
+  m_text: CYCLOPS-50
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 0d31721acd06b6043823c2b027f69e95, type: 2}
   m_sharedMaterial: {fileID: 409247385549712678, guid: 0d31721acd06b6043823c2b027f69e95,
@@ -514,11 +514,11 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30.25
+  m_fontSize: 17.8
   m_fontSizeBase: 24.38
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 18
+  m_fontSizeMin: 15
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 2
