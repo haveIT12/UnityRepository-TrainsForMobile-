@@ -37,31 +37,39 @@ public class TrainSystemScript : MonoBehaviour
     }
     public void BuyTrain(int id)
     {
-        if (mainScript.pData.newMoney >= tInfo[id].priceTrain)
+        if (tInfo[id].isTicketCost)
         {
-            if (train.Count < 20)
-            {
-                if (train.Count >= 8)
-                {
-                    bottomsize += 83f;
-                    uiScript.contentDepot.offsetMin = new Vector2(0, -bottomsize);
-                }
-                train.Add(Instantiate(trainPrefab[id], gameObject.transform));
-                tScript = train[train.Count - 1].GetComponent<TrainScript>();
-                train[train.Count - 1].GetComponent<TrainScript>().AddDepotElement();
-                mainScript.pData.ChangeMoney(gameObject, -tInfo[id].priceTrain);
-                uiScript.CheckUnlockedTrains();
-                uiScript.CloseMenu();
-                //mainScript.SelectTrainWay();
-                trManager.OpenAll();
-                trManager.tScript = tScript;
-                mainScript.camToTargetCoroutine = mainScript.CamToTarget(trManager.gameObject, true, 15f);
-                mainScript.StartCoroutine(mainScript.camToTargetCoroutine);
-            }
+            if (mainScript.pData.CheckValue(tInfo[id].priceTrain, true))
+                mainScript.pData.ChangeTickets(this.gameObject, -tInfo[id].priceTrain);
             else
-                Debug.Log("Too Much Trains");
-
+                return;
         }
+        else
+        {
+            if (mainScript.pData.CheckValue(tInfo[id].priceTrain, false))
+                mainScript.pData.ChangeMoney(this.gameObject, -tInfo[id].priceTrain);
+            else
+                return;
+        }
+        if (train.Count < 20)
+        {
+            if (train.Count >= 8)
+            {
+                bottomsize += 83f;
+                uiScript.contentDepot.offsetMin = new Vector2(0, -bottomsize);
+            }
+            train.Add(Instantiate(trainPrefab[id], gameObject.transform));
+            tScript = train[train.Count - 1].GetComponent<TrainScript>();
+            train[train.Count - 1].GetComponent<TrainScript>().AddDepotElement();
+            uiScript.CheckUnlockedTrains();
+            uiScript.CloseMenu();
+            trManager.OpenAll();
+            trManager.tScript = tScript;
+            mainScript.camToTargetCoroutine = mainScript.CamToTarget(trManager.gameObject, true, 15f);
+            mainScript.StartCoroutine(mainScript.camToTargetCoroutine);
+        }
+        else
+            Debug.Log("Too Much Trains");
 
     }
     public void CloseElementDepot()
@@ -96,7 +104,7 @@ public class TrainSystemScript : MonoBehaviour
     {
         for (int i = 0; i < wagonPref.Length; i++)
         {
-            if (mainScript.pData.newMoney >= wagonPref[i].price)
+            if (mainScript.pData.CheckValue(wagonPref[i].price, false))
             {
                 mainScript.pData.ChangeMoney(wagonPref[i].gameObject, -wagonPref[i].price);
                 tScript.BuyWagon(type);

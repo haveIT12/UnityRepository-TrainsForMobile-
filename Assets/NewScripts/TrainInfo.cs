@@ -21,6 +21,8 @@ public class TrainInfo : ScriptableObject
     private float _chanceBroke;
     [SerializeField]
     private float _loadingSpeed;
+    [SerializeField]
+    private bool _isTicketCost;
 
 
     public string trainName => this._trainName;
@@ -31,4 +33,5 @@ public class TrainInfo : ScriptableObject
     public string typeTrain => this._typeTrain;
     public float chanceBroke => this._chanceBroke;
     public float loadingSpeed => this._loadingSpeed;
+    public bool isTicketCost => this._isTicketCost;
 }

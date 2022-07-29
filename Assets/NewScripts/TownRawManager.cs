@@ -94,7 +94,7 @@ public class TownRawManager : MonoBehaviour
         mainScript.uiScript.goSelectWay.interactable = false;
         mainScript.uiScript.tipTextSelectWay.text = "Select FIRST station";
         mainScript.uiScript.canvasSelectWay.SetActive(true);
-        mainScript.uiScript.canvasMainUI.SetActive(false);
+        mainScript.uiScript.uiTween.CloseMainMenu();
         mainScript.isSelectWayOpen = true;
         for(int i = 0; i < town.Count; i++)
         {
@@ -120,9 +120,11 @@ public class TownRawManager : MonoBehaviour
     private void CloseAll()
     {
         uiScript.panelSelectWay.SetActive(false);
-        mainScript.uiScript.canvasSelectWay.SetActive(false);
-            if(tScript.way.Count == 0)
-        mainScript.uiScript.canvasMainUI.SetActive(true);
+        uiScript.canvasSelectWay.SetActive(false);
+        if (tScript.way.Count == 0)
+        {
+            mainScript.uiScript.uiTween.OpenMainUI();
+        }
         mainScript.isSelectWayOpen = false;
         for (int i = 0; i < town.Count; i++)
         {

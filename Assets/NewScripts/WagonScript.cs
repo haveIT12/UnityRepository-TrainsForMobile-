@@ -78,6 +78,7 @@ public class WagonScript : MonoBehaviour
                 if (newLoadWeight - loadWeight > -0.5)
                 {
                     train.tsScript.priceManager.Sell(this, nLW, typeOfWeight);
+                    train.taskSystem.GetInfo(train, nLW, typeOfWeight);
                     train.totalCargoPrice += totalPrice;
                     totalPrice = 0;
                     if (train.tsScript.tScript == train)
@@ -85,6 +86,7 @@ public class WagonScript : MonoBehaviour
                     nLW = 0;
                     loadWeight = newLoadWeight;
                     isLoaded = false;
+                    train.tsScript.mainScript.ChangeExp(GetExp());
                     isUnloaded = true;
                     Hide();
                     train.IsWagonsUnload();
@@ -95,15 +97,19 @@ public class WagonScript : MonoBehaviour
         {
             if (isWagonSpawned == true)
             {
-                Vector3 direction;
-                if (loadWagonNum == 0)
-                    direction = (train.dir.transform.position - secondPlace.transform.position).normalized;
-                else
-                    direction = (train.wagonsLoad[loadWagonNum-1].secondPlace.transform.position - secondPlace.transform.position).normalized;
-                gameObject.transform.forward = direction;
-                gameObject.transform.position += gameObject.transform.forward * (train.speed / sp) * Time.fixedDeltaTime;
-                Quaternion lookOnLook = Quaternion.LookRotation(direction);
-                gameObject.transform.rotation = Quaternion.Slerp(gameObject.transform.rotation, lookOnLook, (train.speed / trnsp) * Time.fixedDeltaTime);
+                if (train.iBroke == false)
+                {
+                    Vector3 direction;
+                    if (loadWagonNum == 0)
+                        direction = (train.dir.transform.position - secondPlace.transform.position).normalized;
+                    else
+                        direction = (train.wagonsLoad[loadWagonNum - 1].secondPlace.transform.position - secondPlace.transform.position).normalized;
+                    gameObject.transform.forward = direction;
+                    gameObject.transform.position += gameObject.transform.forward * (train.speed / sp) * Time.fixedDeltaTime;
+                    Quaternion lookOnLook = Quaternion.LookRotation(direction);
+                    gameObject.transform.rotation = Quaternion.Slerp(gameObject.transform.rotation, lookOnLook, (train.speed / trnsp) * Time.fixedDeltaTime);
+                }
+                
             }
         }
         else
@@ -144,6 +150,11 @@ public class WagonScript : MonoBehaviour
             }
         }
 
+    }
+    private float GetExp()
+    {
+        int i = Random.Range(20, 50);
+        return i;
     }
     public void Spawn()
     {
@@ -256,11 +267,11 @@ public class WagonScript : MonoBehaviour
         if (typeOfWagon == "Freight")
         {
             if (train.placeWhereIAm.isTown)
-                maxLoadWeight = maxLoadProduct * train.wagonSizeRatio;
+                maxLoadWeight = maxLoadProduct * (1 + train.wagonSizeRatio);
             else
-                maxLoadWeight = maxLoadRaw * train.wagonSizeRatio;
+                maxLoadWeight = maxLoadRaw * (1 + train.wagonSizeRatio);
         }
         else
-            maxLoadWeight = maxLoadPassenger * train.wagonSizeRatio;
+            maxLoadWeight = maxLoadPassenger * (1 + train.wagonSizeRatio);
     }
 }

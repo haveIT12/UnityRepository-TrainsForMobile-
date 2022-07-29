@@ -7,6 +7,7 @@ using TMPro;
 public class TrainScript : MonoBehaviour
 {
     [Header("Links")]
+    public TasksSystemScript taskSystem;
     public TrainSystemScript tsScript;
     public UserInterfaceScript uiScript;
     public TrainInfo tInfo;
@@ -36,10 +37,11 @@ public class TrainScript : MonoBehaviour
     public string subNameTrain;
     public float repairCost;
     public float priceTrain;
+    public bool isTicketCost;
     public float newRepair;
     public Color newRepairColor;
     public float chanceBroke;
-    private bool iBroke;
+    public bool iBroke;
     public float breakSpeed;
     private IEnumerator lerpcoroutine;
     public float sellPrice;
@@ -90,6 +92,7 @@ public class TrainScript : MonoBehaviour
         tPointer = gameObject.GetComponent<TargetPointer>();
         tsScript = FindObjectOfType<TrainSystemScript>();
         uiScript = tsScript.uiScript;
+        taskSystem = uiScript.mainScript.taskSystem;
         trainName = tInfo.trainName;
         trainSprite = tInfo.spriteTrain;
         maxSpeed = tInfo.maxSpeed;
@@ -99,6 +102,7 @@ public class TrainScript : MonoBehaviour
         priceTrain = tInfo.priceTrain;
         chanceBroke = tInfo.chanceBroke;
         wagonsLoadingSpeed = tInfo.loadingSpeed;
+        isTicketCost = tInfo.isTicketCost;
         CheckType();
     }
     private void Update()
@@ -461,7 +465,7 @@ public class TrainScript : MonoBehaviour
         {
             if (tUpgrade[upgradeLvl].isTickets)
             {
-                if (tsScript.mainScript.pData.newTickets < tUpgrade[upgradeLvl].upgradeCost)
+                if (!tsScript.mainScript.pData.CheckValue(tUpgrade[upgradeLvl].upgradeCost, true))
                 {
                     uiScript.upgradeTrain.interactable = false;
                     uiScript.upgradeTrainPrice.text = FormatNumsHelper.FormatNum(tUpgrade[upgradeLvl].upgradeCost);
@@ -472,7 +476,7 @@ public class TrainScript : MonoBehaviour
             }
             else
             {
-                if (tsScript.mainScript.pData.newMoney < tUpgrade[upgradeLvl].upgradeCost)
+                if (!tsScript.mainScript.pData.CheckValue(tUpgrade[upgradeLvl].upgradeCost, false))
                 {
                     uiScript.upgradeTrain.interactable = false;
                     uiScript.upgradeTrainPrice.text = FormatNumsHelper.FormatNum(tUpgrade[upgradeLvl].upgradeCost);
@@ -529,7 +533,16 @@ public class TrainScript : MonoBehaviour
             canvas.SetActive(true);
             scInfo.tScript = this;
             scInfo.canvas = canvas;
-            scInfo.ShowInfoTrain(this, totalCargoPrice);
+
+            int i = Random.Range(0, 100);
+            if (i <= tsScript.mainScript.GetChanceForTicket())
+            {
+                int b = Random.Range(1, 20);
+                scInfo.ShowInfoTrain(this, totalCargoPrice, true, b);
+                tsScript.mainScript.pData.ChangeTickets(this.gameObject, b);
+            }
+            else
+                scInfo.ShowInfoTrain(this, totalCargoPrice, false);
         }
     }
     public void SellTrain()
@@ -589,7 +602,10 @@ public class TrainScript : MonoBehaviour
     private void CalculateSellPrice()
     {
         sellPrice = 0;
-        sellPrice = (health / maxHealth) * priceTrain;
+        if (isTicketCost)
+            sellPrice = (health / maxHealth) * priceTrain * 500;
+        else
+            sellPrice = (health / maxHealth) * priceTrain;
         sellExtraPrice = 0;
         for (int i = 0; i < wagon.Count; i++)
         {
@@ -621,7 +637,7 @@ public class TrainScript : MonoBehaviour
     }
     public void Repair()
     {
-        if (tsScript.mainScript.pData.newMoney >= repairCost)
+        if (tsScript.mainScript.pData.CheckValue(repairCost, false))
         {
             if (iBroke == true)
             {
@@ -646,16 +662,27 @@ public class TrainScript : MonoBehaviour
         {
             if (health <= 30)
             {
-                repairCost = (priceTrain / 100) * 45;
+                if (isTicketCost)
+                    repairCost = (priceTrain * 100);
+                else
+                    repairCost = (priceTrain / 100) * 25;
             }
             else
-                repairCost = (priceTrain / 100) * 30;
+            {
+                if (isTicketCost)
+                    repairCost = (priceTrain * 100);
+                else
+                    repairCost = (priceTrain / 100) * 20;
+            }
             newRepair = health + 30;
         }
         else
         {
             curr = maxHealth - health;
-            repairCost = (priceTrain / 100) * curr;
+            if (isTicketCost)
+                repairCost = (priceTrain * 5) * curr;
+            else
+                repairCost = (priceTrain / 100) * curr;
             newRepair = health + curr;
         }
 
@@ -734,6 +761,7 @@ public class TrainScript : MonoBehaviour
                 uiScript.wagonDepot[i].gameObject.SetActive(true);
                 uiScript.wagonDepot[i].sprite = wagon[i].wagonSprite;
             }
+            uiScript.uiTween.SelectTrainDepot();
             maxHealthText.color = tsScript.colorSelect;
             trainNameText.color = Color.white;
             healthText.color = colorHealth;
@@ -750,7 +778,7 @@ public class TrainScript : MonoBehaviour
         mask.SetActive(false);
         uiScript.nameTrainDepot.gameObject.SetActive(false);
         uiScript.speedTrainDepot.gameObject.SetActive(false);
-        uiScript.trainDepotImage.gameObject.SetActive(false);
+        uiScript.uiTween.CloseTrainDepot();
         maxHealthText.color = tsScript.colorNeutral;
         trainNameText.color = tsScript.colorSecondNeutral;
         healthText.color = tsScript.colorNeutral;

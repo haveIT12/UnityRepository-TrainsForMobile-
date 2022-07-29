@@ -126,14 +126,14 @@ public class TargetPointer : MonoBehaviour
 			case "StorageFull":
 				{
 					PointerIcon = pManager.storageIsFull;
-					OutOfScreenIcon = pManager.globalError;
+					OutOfScreenIcon = pManager.storageIsFull;
 					animator.SetTrigger("GlobalErrorOpen");
 					break;
 				}
 			case "RawIsNotEnough":
 				{
 					PointerIcon = pManager.rawIsNotEnough;
-					OutOfScreenIcon = pManager.globalError;
+					OutOfScreenIcon = pManager.rawIsNotEnough;
 					animator.SetTrigger("GlobalErrorOpen");
 					break;
 				}
@@ -168,14 +168,14 @@ public class TargetPointer : MonoBehaviour
 			case "TrainIsBroken":
 				{
 					PointerIcon = pManager.trainIsBroken;
-					OutOfScreenIcon = pManager.globalTrainError;
+					OutOfScreenIcon = pManager.trainIsBroken;
 					animator.SetTrigger("GlobalErrorOpen");
 					break;
 				}
 			case "PeopleNotEnough":
 				{
 					PointerIcon = pManager.peopleNotEnough;
-					OutOfScreenIcon = pManager.globalError;
+					OutOfScreenIcon = pManager.peopleNotEnough;
 					animator.SetTrigger("GlobalErrorOpen");
 					break;
 				}

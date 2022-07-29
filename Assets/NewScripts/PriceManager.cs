@@ -6,6 +6,8 @@ public class PriceManager : MonoBehaviour
 {
     [SerializeField]
     private PlayerData pData;
+    public float[] randomPercengeMin;
+    public float[] randomPercengeMax;
     [Header("Raw")]
     [SerializeField]
     private float wheatPrice;
@@ -32,6 +34,7 @@ public class PriceManager : MonoBehaviour
     [SerializeField]
     private float vegetablesPrice;
 
+
     [Space]
     [Header("Product")]
     [SerializeField]
@@ -39,9 +42,9 @@ public class PriceManager : MonoBehaviour
     [SerializeField]
     private float breadPrice;                      
     [SerializeField]
-    private float clothPrice;                     
+    private float clothPrice;
     [SerializeField]
-    private float coalPrice;                       
+    private float coalPrice;
     [SerializeField]
     private float dieselPrice;                     
     [SerializeField]
@@ -53,6 +56,68 @@ public class PriceManager : MonoBehaviour
     private float passengerPrice;
 
     private float totalPrice;
+    public void RandomUpdate(string name, float count)
+    {
+        switch (name)
+        {
+            case "Wheat":
+                {
+                    wheatPrice = Mathf.RoundToInt(wheatPrice * count);
+                    break;
+                }
+            case "Bread":
+                {
+                    breadPrice = Mathf.RoundToInt(breadPrice * count);
+                    break;
+                }
+            case "Wood":
+                {
+                    woodPrice = Mathf.RoundToInt(woodPrice * count);
+                    break;
+                }
+            case "Planks":
+                {
+                    planksPrice = Mathf.RoundToInt(planksPrice * count);
+                    break;
+                }
+            case "Passenger":
+                {
+                    passengerPrice = Mathf.RoundToInt(passengerPrice * count);
+                    break;
+                }
+        }
+    }
+    public void UpdatePrice(string name, float count)
+    {
+        switch (name)
+        {
+            case "Wheat":
+                {
+                    wheatPrice = count;
+                    break;
+                }
+            case "Bread":
+                {
+                    breadPrice = count;
+                    break;
+                }
+            case "Wood":
+                {
+                    woodPrice = count;
+                    break;
+                }
+            case "Planks":
+                {
+                    planksPrice = count;
+                    break;
+                }
+            case "Passenger":
+                {
+                    passengerPrice = count;
+                    break;
+                }
+        }
+    }
     private void CheckPrice(string whatCheck, float count)
     {
         totalPrice = 0;
@@ -90,5 +155,32 @@ public class PriceManager : MonoBehaviour
         CheckPrice(whatSell, count);
         sender.totalPrice = totalPrice;
         pData.ChangeMoney(sender.gameObject, totalPrice);
+    }
+    public float GetPrice(string name)
+    {
+        switch (name)
+        {
+            case "Wheat":
+                {
+                    return wheatPrice;
+                }
+            case "Bread":
+                {
+                    return breadPrice;
+                }
+            case "Wood":
+                {
+                    return woodPrice;
+                }
+            case "Planks":
+                {
+                    return planksPrice;
+                }
+            case "Passenger":
+                {
+                    return passengerPrice;
+                }
+        }
+        return 0;
     }
 }

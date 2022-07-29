@@ -33,6 +33,8 @@ public class TownInfo : ScriptableObject
     [SerializeField]
     private float[] _upgradeCost;
     [SerializeField]
+    private bool[] _isUpgradeTicket;
+    [SerializeField]
     private int _rawToProduct;
     [SerializeField]
     private int _productFromRaw;
@@ -91,6 +93,7 @@ public class TownInfo : ScriptableObject
     public float[] newProductFromRaw => this._newProductFromRaw;
     public float[] newRawToProduct => this._newRawToProduct;
     public float[] upgradeCost => this._upgradeCost;
+    public bool[] isUpggradeTicket => this._isUpgradeTicket;
     public int rawToProduct => this._rawToProduct;
     public int productFromRaw => this._productFromRaw;
     public float multiplier => this._multiplier;

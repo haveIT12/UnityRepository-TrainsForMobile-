@@ -58,6 +58,7 @@ public class TownRawScript : MonoBehaviour
 
     public int upgradeLvl;
     public float[] upgradeCost;
+    public bool[] isUpgradeTicket;
     public float rawToProduct;
     public float[] newProductFromRaw;
     public float[] newRawToProduct;
@@ -72,6 +73,9 @@ public class TownRawScript : MonoBehaviour
     public bool loadOrUnloadP; //true-load; false-unload;
     public bool loadOrUnloadR; //true-load; false-unload;
     public bool loadOrUnloadPeople; //true-load; false-unload;
+
+    public Sprite currencyMoney;
+    public Sprite currencyTicket;
     [Space]
     [Header("Station")]
     public float peopleCount;
@@ -120,6 +124,7 @@ public class TownRawScript : MonoBehaviour
             newRawToProduct = townInfo.newRawToProduct;
             newTimeForProduct = townInfo.newTimeForProduct;
 
+            publicBussinessSprite.sprite = businessSprite;
 
             timeForPeople = townInfo.timeForPeople;
             timeForPeopleNext = townInfo.timeForPeopleNext;
@@ -143,6 +148,7 @@ public class TownRawScript : MonoBehaviour
         maxPeopleNext = townInfo.maxPeopleNext;
 
         upgradeCost = townInfo.upgradeCost;
+        isUpgradeTicket = townInfo.isUpggradeTicket;
         townName = townInfo.townName;
         rawName = townInfo.rawName;
         maxStorageRaw = townInfo.maxStorageRaw;
@@ -152,6 +158,9 @@ public class TownRawScript : MonoBehaviour
         timeForProduct = townInfo.timeForProduct;
         multiplier = townInfo.multiplier;
         rawType = townInfo.typeRaw;
+
+        townNameText.text = townName;
+        publicRawSprite.sprite = rawSprite;
     }
     private void Start()
     {
@@ -236,9 +245,11 @@ public class TownRawScript : MonoBehaviour
                     if (isTown == true)
                     {
                         ChangeProduct(+productFromRaw);
+                        mainScript.taskSystem.GetInfo(this, +productFromRaw, productType);
                         ChangeRaw(-rawToProduct);
                         isProductReady = false;
                         timeCurrent = 0;
+                        mainScript.ChangeExp(GetExp());
                         CheckProductReady();
                     }
                 }  
@@ -249,7 +260,9 @@ public class TownRawScript : MonoBehaviour
                 if (timeCurrentRaw > timeForRaw)
                 {
                     ChangeRaw(rawFromPeople);
+                    mainScript.taskSystem.GetInfo(this, rawFromPeople, rawType);
                     ChangePeople(-peopleToRaw);
+                    mainScript.ChangeExp(GetExp());
                     isRawReady = false;
                     timeCurrentRaw = 0;
                     CheckRawReady();
@@ -261,12 +274,19 @@ public class TownRawScript : MonoBehaviour
                 if (timeCurrentPeople > timeForPeople)
                 {
                     ChangePeople(+peopleForTime);
+                    mainScript.taskSystem.GetInfo(this, +peopleForTime, "Passenger");
+                    mainScript.ChangeExp(GetExp());
                     isPeopleReady = false;
                     timeCurrentPeople = 0;
                     CheckPeopleReady();
                 }
             }
         }
+    }
+    private float GetExp()
+    {
+        int i = Random.Range(2, 10);
+        return i;
     }
     private void Update()
     {
@@ -304,80 +324,102 @@ public class TownRawScript : MonoBehaviour
     {
         if (upgradeLvl <= 3)
         {
-            if (mainScript.pData.newMoney >= upgradeCost[upgradeLvl])
+            if (isUpgradeTicket[upgradeLvl])
             {
-                mainScript.pData.ChangeMoney(this.gameObject, -upgradeCost[upgradeLvl]);
-                upgradeLvl++;
-                if (isTown)
+                if (mainScript.pData.CheckValue(upgradeCost[upgradeLvl], true))
+                    mainScript.pData.ChangeTickets(this.gameObject, -upgradeCost[upgradeLvl]);
+                else
+                    return;
+            }
+            else
+            {
+                if (mainScript.pData.CheckValue(upgradeCost[upgradeLvl], false))
+                    mainScript.pData.ChangeMoney(this.gameObject, -upgradeCost[upgradeLvl]);
+                else
+                    return;
+            }
+            upgradeLvl++;
+            if (isTown)
+            {
+                productFromRaw = newProductFromRaw[upgradeLvl];
+                rawToProduct = newRawToProduct[upgradeLvl];
+                timeForProduct = newTimeForProduct[upgradeLvl];
+                maxStorageProduct = maxStorageProductNew[upgradeLvl];
+                maxStorageRaw = maxStorageRawNew[upgradeLvl];
+                //Station
+                maxPeople = maxPeopleNext[upgradeLvl];
+                timeForPeople = timeForPeopleNext[upgradeLvl];
+                peopleForTime = peopleForTimeNext[upgradeLvl];
+
+                CheckPeople();
+                uiScript.currentTimeForProduct.text = newTimeForProduct[upgradeLvl].ToString() + "s";
+                uiScript.rawToProductText.text = FormatNumsHelper.FormatNum((rawToProduct));
+                uiScript.productFromRawText.text = FormatNumsHelper.FormatNum((productFromRaw));
+                //Station
+                uiScript.maxPeopleCurrent.text = FormatNumsHelper.FormatNum((maxPeople));
+                uiScript.currentTimeForPeople.text = timeForPeople.ToString() + "s";
+                uiScript.peopleForTime.text = peopleForTime.ToString();
+                if (upgradeLvl > 3)
                 {
-                    productFromRaw = newProductFromRaw[upgradeLvl];
-                    rawToProduct = newRawToProduct[upgradeLvl];
-                    timeForProduct = newTimeForProduct[upgradeLvl];
-                    maxStorageProduct = maxStorageProductNew[upgradeLvl];
-                    maxStorageRaw = maxStorageRawNew[upgradeLvl];
-                    //Station
-                    maxPeople = maxPeopleNext[upgradeLvl];
-                    timeForPeople = timeForPeopleNext[upgradeLvl];
-                    peopleForTime = peopleForTimeNext[upgradeLvl];
-
-                    CheckPeople();
-                    uiScript.currentTimeForProduct.text = newTimeForProduct[upgradeLvl].ToString() + "s";
-                    uiScript.rawToProductText.text = FormatNumsHelper.FormatNum((rawToProduct));
-                    uiScript.productFromRawText.text = FormatNumsHelper.FormatNum((productFromRaw));
-                    //Station
-                    uiScript.maxPeopleCurrent.text = FormatNumsHelper.FormatNum((maxPeople));
-                    uiScript.currentTimeForPeople.text = timeForPeople.ToString() + "s";
-                    uiScript.peopleForTime.text = peopleForTime.ToString();
-                    if (upgradeLvl > 3)
-                        uiScript.upgradeCostText.text = "MaxLvl";
-                    else
-                    {
-                        uiScript.peopleForTimeNext.text = FormatNumsHelper.FormatNum((peopleForTimeNext[upgradeLvl + 1]));
-                        uiScript.newTimeForPeople.text = timeForPeopleNext[upgradeLvl + 1].ToString() + "s";
-                        uiScript.maxPeopleNext.text = FormatNumsHelper.FormatNum(maxPeopleNext[upgradeLvl + 1]);
-
-                        uiScript.nextTimeForProduct.text = newTimeForProduct[upgradeLvl + 1].ToString() + "s";
-                        uiScript.upgradeCostText.text = FormatNumsHelper.FormatNum(upgradeCost[upgradeLvl]) + "$";
-                        uiScript.newRawToProductText.text = FormatNumsHelper.FormatNum((newRawToProduct[upgradeLvl + 1]));
-                        uiScript.newProductFromRawText.text = FormatNumsHelper.FormatNum((newProductFromRaw[upgradeLvl + 1]));
-                    }
+                    uiScript.upgradeTownCurrency.gameObject.SetActive(false);
+                    uiScript.upgradeCostText.gameObject.transform.SetParent(uiScript.centerPosTown.transform);
+                    uiScript.upgradeCostText.GetComponent<RectTransform>().anchoredPosition = Vector3.zero;
+                    uiScript.upgradeCostText.text = "MaxLvl";
                 }
                 else
                 {
-                    maxStorageRaw = maxStorageRawNew[upgradeLvl];
-                    if (upgradeLvl == lvlOpenSecondStorage)
-                    {
-                        OpenSecondStorage();
-                    }
-                    if (upgradeLvl >= lvlOpenSecondStorage)
-                    {
-                        maxStorageRaw = maxStorageRaw * 2;
-                    }
-                    peopleToRaw = newPeopleToRaw[upgradeLvl];
-                    timeForRaw = newTimeForRaw[upgradeLvl];
-                    rawFromPeople = newRawFromPeople[upgradeLvl];
-                    maxPeople = maxPeopleNext[upgradeLvl];
-                    uiScript.currentRawFromPeople.text = FormatNumsHelper.FormatNum((rawFromPeople));
-                    uiScript.timeToRawCurrent.text = timeForRaw.ToString() + "s";
-                    uiScript.currentPeopleToRaw.text = FormatNumsHelper.FormatNum((peopleToRaw));
-                    if (upgradeLvl > 3)
-                    {
-                        uiScript.upgradePriceRaw.text = "MaxLvl";
-                    }   
+                    if (isUpgradeTicket[upgradeLvl])
+                        uiScript.upgradeTownCurrency.sprite = uiScript.currencyTickets;
                     else
-                    {
-                        uiScript.nextRawFromPeople.text = FormatNumsHelper.FormatNum((newRawFromPeople[upgradeLvl+1]));
-                        uiScript.timeToRawNext.text = newTimeForRaw[upgradeLvl+1].ToString() + "s";
-                        uiScript.upgradePriceRaw.text = FormatNumsHelper.FormatNum(upgradeCost[upgradeLvl]) + "$";   
-                        uiScript.nextPeopleToRaw.text = FormatNumsHelper.FormatNum((newPeopleToRaw[upgradeLvl+1]));
-                    }
+                        uiScript.upgradeTownCurrency.sprite = uiScript.currencyMoney;
+                    uiScript.peopleForTimeNext.text = FormatNumsHelper.FormatNum((peopleForTimeNext[upgradeLvl + 1]));
+                    uiScript.newTimeForPeople.text = timeForPeopleNext[upgradeLvl + 1].ToString() + "s";
+                    uiScript.maxPeopleNext.text = FormatNumsHelper.FormatNum(maxPeopleNext[upgradeLvl + 1]);
+
+                    uiScript.nextTimeForProduct.text = newTimeForProduct[upgradeLvl + 1].ToString() + "s";
+                    uiScript.upgradeCostText.text = FormatNumsHelper.FormatNum(upgradeCost[upgradeLvl]);
+                    uiScript.newRawToProductText.text = FormatNumsHelper.FormatNum((newRawToProduct[upgradeLvl + 1]));
+                    uiScript.newProductFromRawText.text = FormatNumsHelper.FormatNum((newProductFromRaw[upgradeLvl + 1]));
                 }
             }
             else
-                Debug.Log("You dont have enough money!");
+            {
+                maxStorageRaw = maxStorageRawNew[upgradeLvl];
+                if (upgradeLvl == lvlOpenSecondStorage)
+                {
+                    OpenSecondStorage();
+                }
+                if (upgradeLvl >= lvlOpenSecondStorage)
+                {
+                    maxStorageRaw = maxStorageRaw * 2;
+                }
+                peopleToRaw = newPeopleToRaw[upgradeLvl];
+                timeForRaw = newTimeForRaw[upgradeLvl];
+                rawFromPeople = newRawFromPeople[upgradeLvl];
+                maxPeople = maxPeopleNext[upgradeLvl];
+                uiScript.currentRawFromPeople.text = FormatNumsHelper.FormatNum((rawFromPeople));
+                uiScript.timeToRawCurrent.text = timeForRaw.ToString() + "s";
+                uiScript.currentPeopleToRaw.text = FormatNumsHelper.FormatNum((peopleToRaw));
+                if (upgradeLvl > 3)
+                {
+                    uiScript.upgradeRawCurrency.gameObject.SetActive(false);
+                    uiScript.upgradePriceRaw.gameObject.transform.SetParent(uiScript.centerPosRaw.transform);
+                    uiScript.upgradePriceRaw.GetComponent<RectTransform>().anchoredPosition = Vector3.zero;
+                    uiScript.upgradePriceRaw.text = "MaxLvl";
+                }   
+                else
+                {
+                    if (isUpgradeTicket[upgradeLvl])
+                        uiScript.upgradeRawCurrency.sprite = uiScript.currencyTickets;
+                    else
+                        uiScript.upgradeRawCurrency.sprite = uiScript.currencyMoney;
+                    uiScript.nextRawFromPeople.text = FormatNumsHelper.FormatNum((newRawFromPeople[upgradeLvl+1]));
+                    uiScript.timeToRawNext.text = newTimeForRaw[upgradeLvl+1].ToString() + "s";
+                    uiScript.upgradePriceRaw.text = FormatNumsHelper.FormatNum(upgradeCost[upgradeLvl]);   
+                    uiScript.nextPeopleToRaw.text = FormatNumsHelper.FormatNum((newPeopleToRaw[upgradeLvl+1]));
+                }
+            }
         }
-        else
-            Debug.Log("Your Lvl is Max");
     }
     public void CheckProductReady()
     {

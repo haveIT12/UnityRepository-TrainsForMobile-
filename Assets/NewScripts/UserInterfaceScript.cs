@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public class UserInterfaceScript : MonoBehaviour
 {
     public MainSceneScript mainScript;
+    public UITween uiTween;
     public TownRawScript townRawScript;
     public RailRoadSystemScript rsScript;
     public TrainSystemScript tsScript;
@@ -21,6 +22,12 @@ public class UserInterfaceScript : MonoBehaviour
     public TextMeshProUGUI moneyui;
     public TextMeshProUGUI ticketsui;
     public GameObject canvasPointer;
+    public TextMeshProUGUI timerText;
+    public GameObject priceListGrow;
+    public GameObject priceListDecrease;
+    public GameObject priceListQ;
+    public TextMeshProUGUI exp;
+    public Image fullbarExp;
     [Space]
     [Header("BGFB")]
     public GameObject canvasBgFB;
@@ -55,6 +62,8 @@ public class UserInterfaceScript : MonoBehaviour
     public Image rawFullBar;
     public Image rawToProductFullBar;
     public Button upgradeButton;
+    public Image upgradeTownCurrency;
+    public GameObject centerPosTown;
     [Space]
 
     public Image[] peopleImageTown;
@@ -83,6 +92,7 @@ public class UserInterfaceScript : MonoBehaviour
     public Image rawFullBarSecond;
     public Image rawFullBarThird;
     public Image rawToRawFullBar;
+    public Image upgradeRawCurrency;
     [Space]
     [Header("RawMenu")]
     public Button upgradeRaw;
@@ -102,6 +112,7 @@ public class UserInterfaceScript : MonoBehaviour
     public Image secondRawStorage;
     public Image resourseToRawFirst;
     public Image rawFromResourse;
+    public GameObject centerPosRaw;
 
     public TextMeshProUGUI currentRawFromPeople;
     public TextMeshProUGUI nextRawFromPeople;
@@ -111,6 +122,7 @@ public class UserInterfaceScript : MonoBehaviour
     public GameObject cancelBuild;
     public GameObject buyRail;
     public TextMeshProUGUI priceRoadText;
+    public Image currencyBuildRoad;
     [Space]
     [Header("SelectWay")]
     public GameObject canvasSelectWay;
@@ -135,9 +147,11 @@ public class UserInterfaceScript : MonoBehaviour
     [Space]
     [Header("TrainShop")]
     public GameObject canvasTrainShop;
+    public GameObject contentTrainShop;
     public TextMeshProUGUI[] priceTrain;
     public GameObject[] maskTrainShop;
     public GameObject[] buttonBuy;
+    public Image[] currencyTrainShop;
     [Space]
     [Header("TrainMenu")]
     public GameObject canvasTrainMenu;
@@ -198,14 +212,82 @@ public class UserInterfaceScript : MonoBehaviour
     public Image healthImageSellMenu;
     public bool isSellMenuOpen;
     public bool isWagonBuyMenuOpen;
+    [Space]
+    [Header("Price List")]
+    public PriceListScript pList;
+    public bool isPriceListOpen;
+    [Space]
+    [Header("Shop")]
+    public ShopScript sScript;
+    public bool IsShopOpen;
+    public GameObject canvasShop;
+    [Space]
+    [Header("TaskMenu")]
+    public GameObject canvasTaskMenu;
+    public bool isTaskMenuOpen;
+    public TextMeshProUGUI taskCompleteText;
+    public TextMeshProUGUI timerTaskMenu;
+    public TasksSystemScript taskSystem;
+    [Space]
+    [Header("GameOver")]
+    public GameObject canvasGameOver;
+    public TextMeshProUGUI resultGame;
+    public TextMeshProUGUI tasksGameOver;
+    public TextMeshProUGUI timeGameOver;
+    public TextMeshProUGUI trainsGameOver;
+    public TextMeshProUGUI wagonsGameOver;
+    public TextMeshProUGUI railroadsGameOver;
+    public TextMeshProUGUI spentMoneyGameOver;
+    public TextMeshProUGUI spentTicketsGameOver;
+    public TextMeshProUGUI earnedMoneyGameOver;
+    public TextMeshProUGUI earnedTicketsGameOver;
+    public TextMeshProUGUI extraTimeAdGameOver;
+    public Button menuGameOver;
+    public Button adGameOver;
+    public Button nextLvlGameOver;
+    public Button retryGameOver;
+
+    public Image[] starGameOver;
+    [Space]
+    [Header("Pause")]
+    public GameObject canvasPause;
+    [Space]
+    [Header("Donate")]
+    public GameObject canvasDonate;
+    [Space]
+    [Header("Convert")]
+    public GameObject canvasConvert;
+    [Header("NoMoney")]
+    public GameObject canvasNoMoney;
 
     private void Awake()
     {
         idMenu = 999;
         InitializeCanvases();
     }
-    void Update()
+    private void Update()
     {
+        if (canvasMainUI.activeInHierarchy)
+        {
+            float minutes = Mathf.FloorToInt(mainScript.timeOfLevel - mainScript.timerS.currentTimer) / 60;
+            float seconds = Mathf.FloorToInt((mainScript.timeOfLevel - mainScript.timerS.currentTimer) % 60);
+            if (seconds >= 10)
+                timerText.text = minutes + ":" + seconds;
+            else
+                timerText.text = minutes + ":0" + seconds;
+        }
+        else
+        {
+            if (isTaskMenuOpen)
+            {
+                float minutes = Mathf.FloorToInt(mainScript.timeOfLevel - mainScript.timerS.currentTimer) / 60;
+                float seconds = Mathf.FloorToInt((mainScript.timeOfLevel - mainScript.timerS.currentTimer) % 60);
+                if (seconds >= 10)
+                    timerTaskMenu.text = minutes + ":" + seconds;
+                else
+                    timerTaskMenu.text = minutes + ":0" + seconds;
+            }
+        }
         if (canvasBgFB.activeSelf)
             UpdateBGFB();
         else
@@ -225,7 +307,7 @@ public class UserInterfaceScript : MonoBehaviour
         {
             if (rsScript.roadSelected != null)
             {
-                if (mainScript.pData.newMoney >= rsScript.roadSelected.price)
+                if (mainScript.pData.CheckValue(rsScript.roadSelected.price, false))
                 {
                     buyRail.GetComponent<Button>().interactable = true;
                 }
@@ -233,6 +315,30 @@ public class UserInterfaceScript : MonoBehaviour
                     buyRail.GetComponent<Button>().interactable = false;
             }
         }
+    }
+    private void Start()
+    {
+        uiTween.OpenMainUI();
+    }
+    public void ResumeGame()
+    { 
+    
+    }
+    public void PauseGame()
+    {
+        canvasPause.gameObject.SetActive(true);
+    }
+    public void OpenConvertMenu()
+    { 
+    
+    }
+    public void OpenNoMoneyMenu()
+    { 
+        
+    }
+    public void OpenDonateMenu()
+    { 
+    
     }
     public void AddNewRoute()
     {
@@ -275,7 +381,7 @@ public class UserInterfaceScript : MonoBehaviour
         isRepairMenuOpen = true;
         tsScript.tScript.ShowHp();
         canvasRepairTrain.gameObject.SetActive(true);
-        if (mainScript.pData.newMoney >= tsScript.tScript.repairCost)
+        if (mainScript.pData.CheckValue(tsScript.tScript.repairCost, false))
             repairButtonRepairTrain.interactable = true;
         else
             repairButtonRepairTrain.interactable = false;
@@ -294,7 +400,7 @@ public class UserInterfaceScript : MonoBehaviour
     public void UpdateRepairInfo()
     {
         Debug.Log("repinfo");
-        if (mainScript.pData.newMoney >= tsScript.tScript.repairCost)
+        if (mainScript.pData.CheckValue(tsScript.tScript.repairCost, false))
             repairButtonRepairTrain.interactable = true;
         else
             repairButtonRepairTrain.interactable = false;
@@ -318,7 +424,7 @@ public class UserInterfaceScript : MonoBehaviour
         wagonButtonBuy[0].interactable = true;
         for (int i = 0; i < tsScript.wagonPref.Length; i++)
         {
-            if (mainScript.pData.newMoney >= tsScript.wagonPref[i].price)
+            if (mainScript.pData.CheckValue(tsScript.wagonPref[i].price, false))
                 wagonButtonBuy[i].interactable = true;
             else
                 wagonButtonBuy[i].interactable = false;
@@ -350,7 +456,7 @@ public class UserInterfaceScript : MonoBehaviour
         canvasWagonBuy.SetActive(true);
         for (int i = 0; i < tsScript.wagonPref.Length; i++)
         {
-            if (mainScript.pData.newMoney >= tsScript.wagonPref[i].price)
+            if (mainScript.pData.CheckValue(tsScript.wagonPref[i].price, false))
                 wagonButtonBuy[i].interactable = true;
             else
                 wagonButtonBuy[i].interactable = false;
@@ -396,13 +502,15 @@ public class UserInterfaceScript : MonoBehaviour
     }
     public void OpenTrainShop()
     {
+        RectTransform rt = contentTrainShop.GetComponent<RectTransform>();
+        rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, 0);
         CheckUnlockedTrains();
         CloseMenu();
-        canvasMainUI.SetActive(false);
+        uiTween.CloseMainMenu();
         idMenu = 2;
         canvasTrainShop.SetActive(true);
         bgfgname.text = "Train Shop";
-        canvasBgFB.SetActive(true);
+        uiTween.OpenBgFB();
         mainScript.isTrainShopOpen = true;
         mainScript.camRig.GetComponent<CameraController>().enabled = false;
     }
@@ -419,11 +527,11 @@ public class UserInterfaceScript : MonoBehaviour
             tScript.healthText.text = tScript.health.ToString();
             tScript = null;
         }
-        canvasMainUI.SetActive(false);
+        uiTween.CloseMainMenu();
         idMenu = 1;
-        canvasDepot.SetActive(true);
+        uiTween.OpenDepot();
         bgfgname.text = "Depot";
-        canvasBgFB.SetActive(true);
+        uiTween.OpenBgFB();
         mainScript.isDepotOpen = true;
         mainScript.camRig.GetComponent<CameraController>().enabled = false;
         contentDepot.offsetMax = new Vector2(0, 0);
@@ -459,7 +567,7 @@ public class UserInterfaceScript : MonoBehaviour
         {
             if (tScript.tUpgrade[tScript.upgradeLvl].isTickets)
             {
-                if (tsScript.mainScript.pData.newTickets < tScript.tUpgrade[tScript.upgradeLvl].upgradeCost)
+                if (!tsScript.mainScript.pData.CheckValue(tScript.tUpgrade[tScript.upgradeLvl].upgradeCost, true))
                 {
                     upgradeTrain.interactable = false;
                     upgradeTrainPrice.text = FormatNumsHelper.FormatNum(tScript.tUpgrade[tScript.upgradeLvl].upgradeCost);
@@ -468,7 +576,7 @@ public class UserInterfaceScript : MonoBehaviour
             }
             else
             {
-                if (tsScript.mainScript.pData.newMoney < tScript.tUpgrade[tScript.upgradeLvl].upgradeCost)
+                if (!tsScript.mainScript.pData.CheckValue(tScript.tUpgrade[tScript.upgradeLvl].upgradeCost, false))
                 {
                     upgradeTrain.interactable = false;
                     upgradeTrainPrice.text = FormatNumsHelper.FormatNum(tScript.tUpgrade[tScript.upgradeLvl].upgradeCost);
@@ -481,28 +589,28 @@ public class UserInterfaceScript : MonoBehaviour
         {
             case 0:
                 {
-                    countAbility[0].text = tScript.maxSpeed + tScript.tUpgrade[0].upgradeInfo;
+                    //countAbility[0].text = "Speed+";
                     break;
                 }
             case 1:
                 {
                     
-                    countAbility[1].text = tScript.chanceBroke + tScript.tUpgrade[1].upgradeInfo;
+                    //countAbility[1].text = "Chance Broke-";
                     break;
                 }
             case 2:
                 {
-                    countAbility[2].text = tScript.maxHealth + tScript.tUpgrade[2].upgradeInfo;
+                    //countAbility[2].text = "Max Health+";
                     break;
                 }
             case 3:
                 {
-                    countAbility[3].text = tScript.wagonsLoadingSpeed + tScript.tUpgrade[3].upgradeInfo;
+                    //countAbility[3].text = "Station Time-";
                     break;
                 }
             case 4:
                 {
-                    countAbility[4].text = tScript.tUpgrade[4].upgradeInfo;
+                    //countAbility[4].text = "Wagons Size+";
                     break;
                 }
             case 5:
@@ -518,14 +626,13 @@ public class UserInterfaceScript : MonoBehaviour
     }
     public void OpenTrainMenu(TrainScript tScript)
     {
-        canvasBgFB.SetActive(false);
-        canvasDepot.SetActive(false);
+        uiTween.CloseDepot();
         mainScript.isDepotOpen = false;
         contentDepot.offsetMax = new Vector2(0, 0);
         tsScript.CloseElementDepot();
         idMenu = 3;
         bgfgname.text = "Train Menu";
-        canvasBgFB.SetActive(true);
+        uiTween.OpenBgFB();
         mainScript.isTrainMenuOpen = true;
         canvasTrainMenu.SetActive(true);
 
@@ -583,7 +690,7 @@ public class UserInterfaceScript : MonoBehaviour
             upgradeButton.GetComponent<Image>().color = new Color(103, 103, 103);
             upgradeButton.interactable = false;
         }
-        else if (mainScript.pData.newMoney < townRawScript.upgradeCost[townRawScript.upgradeLvl])
+        else if (!mainScript.pData.CheckValue(townRawScript.upgradeCost[townRawScript.upgradeLvl], false))
         {
             upgradeButton.GetComponent<Image>().color = new Color(103, 103, 103);
             upgradeButton.interactable = false;
@@ -615,7 +722,7 @@ public class UserInterfaceScript : MonoBehaviour
             upgradeRaw.GetComponent<Image>().color = new Color(103, 103, 103);
             upgradeRaw.interactable = false;
         }
-        else if (mainScript.pData.newMoney < townRawScript.upgradeCost[townRawScript.upgradeLvl])
+        else if (!mainScript.pData.CheckValue(townRawScript.upgradeCost[townRawScript.upgradeLvl], false))
         {
             upgradeRaw.GetComponent<Image>().color = new Color(103, 103, 103);
             upgradeRaw.interactable = false;
@@ -627,10 +734,18 @@ public class UserInterfaceScript : MonoBehaviour
         }
     }
     public void OpenTownRaw()
-    {  
+    {
+        bgfgname.text = townRawScript.name;
+        uiTween.CloseMainMenu();
+        idMenu = 4;
+        uiTween.OpenBgFB();
+        mainScript.isTownRawOpened = true;
+        mainScript.camRig.GetComponent<CameraController>().enabled = false;
+        mainScript.townRawScript.CloseTownRawInfo();
         if (townRawScript.isTown == true)
         {
-            canvasTown.SetActive(true);
+            uiTween.OpenTown();
+            bgPos[0].transform.position = bgPos[1].transform.position;
             townNameText.text = townRawScript.townName;
             businessNameText.text = townRawScript.businessName;
             publicBussinessSprite.sprite = townRawScript.businessSprite;
@@ -655,21 +770,11 @@ public class UserInterfaceScript : MonoBehaviour
             currentTimeForPeople.text = townRawScript.timeForPeople.ToString() + "s";
             maxPeopleCurrent.text = FormatNumsHelper.FormatNum(townRawScript.maxPeople);
 
-            if (townRawScript.upgradeLvl < 4)
+            if (townRawScript.upgradeLvl >3)
             {
-                upgradeRaw.GetComponent<Image>().color = new Color(103, 103, 103);
-                upgradeRaw.interactable = false;
-                nextTimeForProduct.text = townRawScript.newTimeForProduct[townRawScript.upgradeLvl+1].ToString() + "s";
-                upgradeCostText.text = FormatNumsHelper.FormatNum(townRawScript.upgradeCost[townRawScript.upgradeLvl]) + "$";
-                newRawToProductText.text = FormatNumsHelper.FormatNum((townRawScript.newRawToProduct[townRawScript.upgradeLvl + 1]));
-                newProductFromRawText.text = FormatNumsHelper.FormatNum((townRawScript.newProductFromRaw[townRawScript.upgradeLvl + 1]));
-                //station
-                peopleForTimeNext.text = FormatNumsHelper.FormatNum((townRawScript.peopleForTimeNext[townRawScript.upgradeLvl + 1]));
-                newTimeForPeople.text = townRawScript.timeForPeopleNext[townRawScript.upgradeLvl + 1].ToString() + "s";
-                maxPeopleNext.text = FormatNumsHelper.FormatNum(townRawScript.maxPeopleNext[townRawScript.upgradeLvl + 1]);
-            }
-            else
-            {
+                upgradeTownCurrency.gameObject.SetActive(false);
+                upgradeCostText.gameObject.transform.SetParent(centerPosTown.gameObject.transform);
+                upgradeCostText.GetComponent<RectTransform>().anchoredPosition = Vector3.zero;
                 nextTimeForProduct.text = townRawScript.newTimeForProduct[townRawScript.upgradeLvl].ToString() + "s";
                 newRawToProductText.text = FormatNumsHelper.FormatNum((townRawScript.newRawToProduct[townRawScript.upgradeLvl]));
                 newProductFromRawText.text = FormatNumsHelper.FormatNum((townRawScript.newProductFromRaw[townRawScript.upgradeLvl]));
@@ -681,11 +786,31 @@ public class UserInterfaceScript : MonoBehaviour
                 newTimeForPeople.text = townRawScript.timeForPeople.ToString() + "s";
                 maxPeopleNext.text = FormatNumsHelper.FormatNum(townRawScript.maxPeople);
             }
+            else
+            {
+                upgradeTownCurrency.gameObject.SetActive(true);
+                upgradeCostText.gameObject.transform.SetParent(upgradeButton.transform);
+                upgradeCostText.GetComponent<RectTransform>().anchoredPosition = Vector3.zero;
+                if (townRawScript.isUpgradeTicket[townRawScript.upgradeLvl])
+                    upgradeTownCurrency.sprite = currencyTickets;
+                else
+                    upgradeTownCurrency.sprite = currencyMoney;
+                upgradeRaw.GetComponent<Image>().color = new Color(103, 103, 103);
+                upgradeRaw.interactable = false;
+                nextTimeForProduct.text = townRawScript.newTimeForProduct[townRawScript.upgradeLvl + 1].ToString() + "s";
+                upgradeCostText.text = FormatNumsHelper.FormatNum(townRawScript.upgradeCost[townRawScript.upgradeLvl]);
+                newRawToProductText.text = FormatNumsHelper.FormatNum((townRawScript.newRawToProduct[townRawScript.upgradeLvl + 1]));
+                newProductFromRawText.text = FormatNumsHelper.FormatNum((townRawScript.newProductFromRaw[townRawScript.upgradeLvl + 1]));
+                //station
+                peopleForTimeNext.text = FormatNumsHelper.FormatNum((townRawScript.peopleForTimeNext[townRawScript.upgradeLvl + 1]));
+                newTimeForPeople.text = townRawScript.timeForPeopleNext[townRawScript.upgradeLvl + 1].ToString() + "s";
+                maxPeopleNext.text = FormatNumsHelper.FormatNum(townRawScript.maxPeopleNext[townRawScript.upgradeLvl + 1]);
+            }
         }
         else
         {
             bgPos[0].transform.position = bgPos[2].transform.position;
-            canvasRaw.SetActive(true);
+            uiTween.OpenRaw();
             townRawScript.rawCount.ToString();
             nameText.text = townRawScript.townName;
             typeRawText.text = townRawScript.rawName;
@@ -707,18 +832,28 @@ public class UserInterfaceScript : MonoBehaviour
             lvlOpenSecondStorage.text = townRawScript.lvlOpenSecondStorage.ToString() + "lvl";
             if (townRawScript.isSecondStorageOpen == true)
                 emptySecondFullBar.gameObject.SetActive(false);
-            if (townRawScript.upgradeLvl < 4)
+            if (townRawScript.upgradeLvl > 3)
             {
-                nextRawFromPeople.text = FormatNumsHelper.FormatNum((townRawScript.newRawFromPeople[townRawScript.upgradeLvl + 1]));
-                timeToRawNext.text = townRawScript.newTimeForRaw[townRawScript.upgradeLvl + 1].ToString() + "s";
-                upgradePriceRaw.text = FormatNumsHelper.FormatNum(townRawScript.upgradeCost[townRawScript.upgradeLvl]) + "$";
-                nextPeopleToRaw.text = FormatNumsHelper.FormatNum((townRawScript.newPeopleToRaw[townRawScript.upgradeLvl + 1]));
+                upgradePriceRaw.gameObject.transform.SetParent(centerPosRaw.gameObject.transform);
+                upgradePriceRaw.GetComponent<RectTransform>().anchoredPosition = Vector3.zero;
+                upgradeRawCurrency.gameObject.SetActive(false);
+                upgradePriceRaw.text = "MaxLvl";
                 upgradeRaw.GetComponent<Image>().color = new Color(103, 103, 103);
                 upgradeRaw.interactable = false;
             }
             else
             {
-                upgradePriceRaw.text = "MaxLvl";
+                upgradeRawCurrency.gameObject.SetActive(true);
+                upgradePriceRaw.gameObject.transform.SetParent(upgradeRaw.transform);
+                upgradePriceRaw.GetComponent<RectTransform>().anchoredPosition = Vector3.zero;
+                if (townRawScript.isUpgradeTicket[townRawScript.upgradeLvl])
+                    upgradeRawCurrency.sprite = currencyTickets;
+                else
+                    upgradeRawCurrency.sprite = currencyMoney;
+                nextRawFromPeople.text = FormatNumsHelper.FormatNum((townRawScript.newRawFromPeople[townRawScript.upgradeLvl + 1]));
+                timeToRawNext.text = townRawScript.newTimeForRaw[townRawScript.upgradeLvl + 1].ToString() + "s";
+                upgradePriceRaw.text = FormatNumsHelper.FormatNum(townRawScript.upgradeCost[townRawScript.upgradeLvl]);
+                nextPeopleToRaw.text = FormatNumsHelper.FormatNum((townRawScript.newPeopleToRaw[townRawScript.upgradeLvl + 1]));
                 upgradeRaw.GetComponent<Image>().color = new Color(103, 103, 103);
                 upgradeRaw.interactable = false;
             }
@@ -730,32 +865,85 @@ public class UserInterfaceScript : MonoBehaviour
         {
             if (mainScript.pData.trainUnlocked[i] == true)
             {
+                currencyTrainShop[i].gameObject.SetActive(true);
                 maskTrainShop[i].SetActive(false);
-                priceTrain[i].text = FormatNumsHelper.FormatNum(tsScript.tInfo[i].priceTrain) + "$";
-                if (tsScript.tInfo[i].priceTrain > mainScript.pData.newMoney)
+                priceTrain[i].text = FormatNumsHelper.FormatNum(tsScript.tInfo[i].priceTrain);
+                if (tsScript.tInfo[i].isTicketCost)
                 {
-                    buttonBuy[i].GetComponent<Button>().interactable = false;
+                    currencyTrainShop[i].sprite = currencyTickets;
+                    if (!mainScript.pData.CheckValue(tsScript.tInfo[i].priceTrain, true))
+                    {
+                        buttonBuy[i].GetComponent<Button>().interactable = false;
+                    }
+                    else
+                    {
+                        buttonBuy[i].GetComponent<Button>().interactable = true;
+                    }
                 }
                 else
                 {
-                    buttonBuy[i].GetComponent<Button>().interactable = true;
+                    currencyTrainShop[i].sprite = currencyMoney;
+                    if (!mainScript.pData.CheckValue(tsScript.tInfo[i].priceTrain, false))
+                    {
+                        buttonBuy[i].GetComponent<Button>().interactable = false;
+                    }
+                    else
+                    {
+                        buttonBuy[i].GetComponent<Button>().interactable = true;
+                    }
                 }
+
             }
             else
             {
+                currencyTrainShop[i].gameObject.SetActive(false);
                 maskTrainShop[i].SetActive(true);
                 priceTrain[i].text = "????";
             }
         }
     }
+    public void OpenPriceList()
+    {
+        pList.OpenPriceList();
+        uiTween.CloseMainMenu();
+        idMenu = 5;
+        bgfgname.text = "Price List";
+        uiTween.OpenBgFB();
+        isPriceListOpen = true;
+        mainScript.camRig.GetComponent<CameraController>().enabled = false;
+    }
+    public void OpenShop()
+    {
+        sScript.OpenShop();
+        uiTween.CloseMainMenu();
+        idMenu = 6;
+        bgfgname.text = "Shop";
+        uiTween.OpenBgFB();
+        canvasShop.SetActive(true);
+        IsShopOpen = true;
+        mainScript.camRig.GetComponent<CameraController>().enabled = false;
+    }
+    public void OpenTaskMenu()
+    {
+        //mainScript.taskSystem.InitTasks();
+        mainScript.taskSystem.CheckDoneTasks();
+        uiTween.CloseMainMenu();
+        Debug.Log("i");
+        idMenu = 7;
+        bgfgname.text = "Tasks";
+        uiTween.OpenBgFB();
+        uiTween.OpenTaskMenu();
+        isTaskMenuOpen = true;
+        mainScript.camRig.GetComponent<CameraController>().enabled = false;
+    }
     public void CloseMenu()
     {
-        switch (idMenu)//1 - Depot; 2 - TrainShop; 3 - TrainMenu; 4 - TownRaw; 999 - Null;
+        switch (idMenu)//1 - Depot; 2 - TrainShop; 3 - TrainMenu; 4 - TownRaw; 5 - PriceList; 6 - Shop; 999 - Null;
         {
             case 1:
                 {
-                    canvasBgFB.SetActive(false);
-                    canvasDepot.SetActive(false);
+                    uiTween.CloseBgFB();
+                    uiTween.CloseDepot();
                     mainScript.isDepotOpen = false;
                     contentDepot.offsetMax = new Vector2(0, 0);
                     tsScript.CloseElementDepot();
@@ -763,14 +951,14 @@ public class UserInterfaceScript : MonoBehaviour
                 }
             case 2:
                 {
-                    canvasBgFB.SetActive(false);
+                    uiTween.CloseBgFB();
                     canvasTrainShop.SetActive(false);
                     mainScript.isTrainShopOpen = false;
                     break;
                 }
             case 3:
                 {
-                    canvasBgFB.SetActive(false);
+                    uiTween.CloseBgFB();
                     canvasTrainMenu.SetActive(false);
                     panelNoRoute.SetActive(true);
                     mainScript.isTrainMenuOpen = false;
@@ -778,26 +966,46 @@ public class UserInterfaceScript : MonoBehaviour
                 }
             case 4:
                 {
-                    canvasBgFB.SetActive(false);
+                    uiTween.CloseBgFB();
                     mainScript.isTownRawOpened = false;
                     if (townRawScript.isTown == true)
-                        canvasTown.SetActive(false);
+                        uiTween.CloseTown();
                     else
-                        canvasRaw.SetActive(false);
+                        uiTween.CloseRaw();
                     bgPos[0].transform.position = bgPos[1].transform.position;
+                    break;
+                }
+            case 5:
+                {
+                    uiTween.CloseBgFB();
+                    pList.ClosePriceList();
+                    isPriceListOpen = false;
+                    break;
+                }
+            case 6:
+                {
+                    uiTween.CloseBgFB();
+                    canvasShop.SetActive(false);
+                    IsShopOpen = false;
+                    break;
+                }
+            case 7:
+                {
+                    uiTween.CloseBgFB();
+                    uiTween.CloseTaskMenu();
+                    isTaskMenuOpen = false;
                     break;
                 }
         }
         idMenu = 999;
         mainScript.camRig.GetComponent<CameraController>().enabled = true;
-        canvasMainUI.SetActive(true);
+        uiTween.OpenMainUI();
     }
     public void InitializeCanvases()
     {
-        canvasBgFB.SetActive(true);
-        canvasBgFB.SetActive(false);
-        //Debug.Log("Canvas BgFb initialized");
-
+        /*canvasMainUI.GetComponent<EventUIScript>().animator.enabled = true;
+        canvasMainUI.SetActive(true);
+        //Debug.Log("Canvas MainUI initialized");
         canvasDepot.SetActive(true);
         canvasDepot.SetActive(false);
         //Debug.Log("Canvas Depot initialized");
@@ -821,5 +1029,7 @@ public class UserInterfaceScript : MonoBehaviour
         canvasTrainMenu.SetActive(true);
         canvasTrainMenu.SetActive(false);
         //Debug.Log("Canvas TrainMenu initialized");
+        canvasShop.SetActive(true);
+        canvasShop.SetActive(false);*/
     }
 }

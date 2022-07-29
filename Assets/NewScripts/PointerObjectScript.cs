@@ -1,13 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class PointerObjectScript : MonoBehaviour
 {
     public TargetPointer tPointer;
     public void Close()
     {
-        Debug.Log("Close");
         tPointer.Destroy();
     }
     public void This()

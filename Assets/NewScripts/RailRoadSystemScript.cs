@@ -20,7 +20,7 @@ public class RailRoadSystemScript : MonoBehaviour
     {
         if (mainScript.isTownRawInfoOpened == true)
             mainScript.townRawScript.CloseTownRawInfo();
-        uiScript.canvasMainUI.SetActive(false);
+        uiScript.uiTween.CloseMainMenu();
         mainScript.isBuildRailOpen = true;
         for (int i = 0; i < road.Length; i++)
         {
@@ -34,7 +34,7 @@ public class RailRoadSystemScript : MonoBehaviour
     }
     public void CloseBuild()
     {
-        uiScript.canvasMainUI.SetActive(true);
+        uiScript.uiTween.OpenMainUI();
         mainScript.isBuildRailOpen = false;
         for (int i = 0; i < road.Length; i++)
         {
